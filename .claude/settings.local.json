@@ -8,7 +8,9 @@
       "Bash(if exist package-lock.json del package-lock.json)",
       "Bash(npm cache clean:*)",
       "Bash(npm config get:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(mkdir:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
