@@ -1,0 +1,48 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const searchParams = request.nextUrl.searchParams
+    const page = parseInt(searchParams.get('page') || '1')
+    const pageSize = parseInt(searchParams.get('pageSize') || '10')
+    const skip = (page - 1) * pageSize
+
+    const [ownedItems, totalItems] = await Promise.all([
+      prisma.ownedItem.findMany({
+        where: { userId: session.user.id },
+        include: {
+          item: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      prisma.ownedItem.count({ where: { userId: session.user.id } }),
+    ])
+
+    const totalPages = Math.ceil(totalItems / pageSize)
+
+    return NextResponse.json({
+      ownedItems,
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        pageSize,
+      },
+    })
+  } catch (error) {
+    console.error('Error fetching owned items:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+

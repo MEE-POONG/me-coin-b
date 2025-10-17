@@ -1,239 +1,587 @@
-# Coin Quest Wallet API Documentation
+# 📚 API Documentation - MeCoins
 
-REST API สำหรับระบบจัดการ Wallet, ฝาก-ถอนเงิน, ซื้อขายไอเทม และโอนเงิน
+## 🔐 Authentication
 
-## 🚀 Quick Start
+All API endpoints (except login) require authentication via NextAuth session.
 
-```bash
-# 1. ติดตั้ง dependencies
-npm install
-
-# 2. Generate Prisma Client
-npm run prisma:generate
-
-# 3. Push schema ไปยัง MongoDB
-npm run prisma:push
-
-# 4. รัน API Server
-npm run dev:api
-
-# หรือรัน Frontend + API พร้อมกัน
-npm run dev:all
+### Headers
 ```
-
-## 📡 Base URL
-
-```
-http://localhost:3001
-```
-
-## 🔗 API Endpoints Summary
-
-| Resource | Endpoints |
-|----------|-----------|
-| **Users** | `GET /api/users`, `PUT /api/users`, `GET /api/users/:id/transactions` |
-| **Deposits** | `GET /api/deposits`, `POST /api/deposits`, `PUT /api/deposits/approve`, `PUT /api/deposits/reject` |
-| **Withdrawals** | `GET /api/withdrawals`, `POST /api/withdrawals`, `PUT /api/withdrawals/approve`, `PUT /api/withdrawals/reject` |
-| **Items** | `GET /api/items`, `POST /api/items`, `PUT /api/items`, `DELETE /api/items`, `POST /api/items/purchase` |
-| **Transfers** | `GET /api/transfers`, `POST /api/transfers` |
-| **Deposit Rates** | `GET /api/deposit-rates`, `GET /api/deposit-rates/active`, `POST /api/deposit-rates`, `PUT /api/deposit-rates`, `DELETE /api/deposit-rates` |
-
----
-
-## 👥 Users API
-
-### GET /api/users
-ดึงรายการ User พร้อม pagination
-
-**Query Parameters:**
-- `page` (number) - หน้าที่ต้องการ (default: 1)
-- `pageSize` (number) - จำนวนต่อหน้า (default: 10)
-- `keyword` (string) - ค้นหาจาก username, email, accountNumber
-- `role` (string) - ADMIN, NORMAL, PREMIUM
-- `id` (string) - ดึง User เดียว
-
-**Response Example:**
-```json
-{
-  "success": true,
-  "data": [{
-    "id": "...",
-    "username": "john_doe",
-    "email": "john@example.com",
-    "wallet": { "balance": 1000 },
-    "_count": { "deposits": 5, "withdrawals": 2 }
-  }],
-  "pagination": {
-    "totalItems": 100,
-    "totalPages": 10,
-    "currentPage": 1,
-    "pageSize": 10
-  }
-}
-```
-
-### PUT /api/users
-อัพเดทข้อมูล User
-
-**Body:**
-```json
-{
-  "id": "user_id",
-  "username": "new_name",
-  "email": "new@email.com",
-  "avatar": "url",
-  "role": "PREMIUM"
-}
-```
-
-### GET /api/users/:id/transactions
-ดึง Transaction history
-
-**Query:** `type`, `status`, `page`, `pageSize`
-
----
-
-## 💰 Deposits API
-
-### POST /api/deposits
-สร้างคำขอฝากเงิน
-
-**Body:**
-```json
-{
-  "userId": "...",
-  "amount": 1000,
-  "slipImage": "https://..."
-}
-```
-
-### PUT /api/deposits/approve
-อนุมัติคำขอฝากเงิน (อัพเดท Wallet อัตโนมัติ)
-
-**Body:**
-```json
-{
-  "id": "deposit_id",
-  "comment": "อนุมัติแล้ว"
-}
+Cookie: next-auth.session-token=<token>
 ```
 
 ---
 
-## 💸 Withdrawals API
+## 👤 Users
 
-### POST /api/withdrawals
-สร้างคำขอถอนเงิน
-
-**Body:**
-```json
-{
-  "userId": "...",
-  "amount": 500
-}
-```
-
-### PUT /api/withdrawals/approve
-อนุมัติคำขอถอนเงิน (หัก Wallet อัตโนมัติ)
-
----
-
-## 🛍️ Items API
-
-### GET /api/items
-ดึงรายการไอเทม
-
-**Query:** `category`, `rarity` (COMMON/RARE/EPIC/LEGENDARY), `keyword`
-
-### POST /api/items
-สร้างไอเทมใหม่
-
-**Body:**
-```json
-{
-  "name": "Legendary Sword",
-  "description": "...",
-  "price": 1000,
-  "imageUrl": "...",
-  "category": "Weapons",
-  "rarity": "LEGENDARY"
-}
-```
-
-### POST /api/items/purchase
-ซื้อไอเทม (หักเงินและสร้าง Transaction อัตโนมัติ)
-
-**Body:**
-```json
-{
-  "userId": "...",
-  "itemId": "..."
-}
-```
-
----
-
-## 🔄 Transfers API
-
-### POST /api/transfers
-โอนเงิน (อัพเดท Wallet ทั้งคู่ทันที)
-
-**Body:**
-```json
-{
-  "senderId": "...",
-  "receiverId": "...",
-  "amount": 100,
-  "comment": "ค่าอาหาร"
-}
-```
-
----
-
-## 📊 Deposit Rates API
-
-### GET /api/deposit-rates/active
-ดึงอัตราแลกเปลี่ยนปัจจุบัน
+### GET /api/users/me
+Get current user information
 
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "...",
-    "name": "Promotion Rate",
-    "rate": 1.5,
-    "startDate": "2025-01-01",
-    "endDate": "2025-12-31",
-    "isActive": true
+  "id": "string",
+  "discordId": "string?",
+  "email": "string",
+  "username": "string",
+  "accountNumber": "string",
+  "avatar": "string",
+  "role": "ADMIN | NORMAL | PREMIUM",
+  "wallet": {
+    "id": "string",
+    "balance": number
   }
 }
 ```
 
 ---
 
-## ✨ Key Features
+## 💰 Wallet
 
-- ✅ **Transaction Safety** - Prisma Transaction ทุกครั้งที่มีการเงิน
-- ✅ **Wallet Management** - อัพเดท balance อัตโนมัติ
-- ✅ **Validation** - ตรวจสอบข้อมูลและสิทธิ์
-- ✅ **Search & Filter** - รองรับการค้นหาและกรอง
-- ✅ **Pagination** - แบ่งหน้าทุก endpoint
-- ✅ **Error Handling** - Response ที่สม่ำเสมอ
+### GET /api/wallet
+Get user's wallet information
 
-## 🔧 Development
+**Response:**
+```json
+{
+  "id": "string",
+  "balance": number,
+  "userId": "string",
+  "createdAt": "datetime",
+  "updatedAt": "datetime"
+}
+```
 
-```bash
-# Prisma Studio (Database GUI)
-npm run prisma:studio
+### POST /api/wallet
+Create a new wallet for current user
 
-# Generate Prisma Client หลังแก้ schema
-npm run prisma:generate
+**Response:** Same as GET /api/wallet
 
-# Push schema changes
-npm run prisma:push
+---
+
+## 📊 Transactions
+
+### GET /api/transactions
+Get transactions list with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+- `type` (optional): DEPOSIT, WITHDRAWAL, PURCHASE, GIFT, TRANSFER
+- `status` (optional): PENDING, COMPLETED, FAILED, CANCELLED
+
+**Response:**
+```json
+{
+  "transactions": [
+    {
+      "id": "string",
+      "amount": number,
+      "type": "string",
+      "status": "string",
+      "slipImage": "string?",
+      "userId": "string",
+      "walletId": "string",
+      "createdAt": "datetime",
+      "user": { ... },
+      "wallet": { ... }
+    }
+  ],
+  "pagination": {
+    "totalItems": number,
+    "totalPages": number,
+    "currentPage": number,
+    "pageSize": number
+  }
+}
 ```
 
 ---
 
-สร้างด้วย Express.js + TypeScript + Prisma + MongoDB
+## 💵 Deposits
+
+### GET /api/deposits
+Get deposits list with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+
+**Response:**
+```json
+{
+  "deposits": [
+    {
+      "id": "string",
+      "amount": number,
+      "slipImage": "string",
+      "status": "PENDING | APPROVED | REJECTED",
+      "rate": number,
+      "comment": "string?",
+      "userId": "string",
+      "createdAt": "datetime",
+      "user": { ... }
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+### POST /api/deposits
+Create a new deposit request
+
+**Request Body:**
+```json
+{
+  "amount": number,
+  "slipImage": "string",
+  "rate": number (optional, default: 1.0)
+}
+```
+
+### PATCH /api/deposits/:id
+Approve or reject deposit (Admin only)
+
+**Request Body:**
+```json
+{
+  "status": "APPROVED | REJECTED",
+  "comment": "string (optional)"
+}
+```
+
+---
+
+## 💸 Withdrawals
+
+### GET /api/withdrawals
+Get withdrawals list with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+
+**Response:**
+```json
+{
+  "withdrawals": [
+    {
+      "id": "string",
+      "amount": number,
+      "status": "PENDING | APPROVED | REJECTED",
+      "comment": "string?",
+      "userId": "string",
+      "createdAt": "datetime",
+      "user": { ... }
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+### POST /api/withdrawals
+Create a new withdrawal request
+
+**Request Body:**
+```json
+{
+  "amount": number
+}
+```
+
+### PATCH /api/withdrawals/:id
+Approve or reject withdrawal (Admin only)
+
+**Request Body:**
+```json
+{
+  "status": "APPROVED | REJECTED",
+  "comment": "string (optional)"
+}
+```
+
+---
+
+## 🛍️ Items
+
+### GET /api/items
+Get items list with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+- `category` (optional)
+- `rarity` (optional): COMMON, RARE, EPIC, LEGENDARY
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": "string",
+      "name": "string",
+      "description": "string",
+      "price": number,
+      "imageUrl": "string?",
+      "category": "string",
+      "rarity": "string",
+      "createdAt": "datetime"
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+### POST /api/items
+Create a new item (Admin only)
+
+**Request Body:**
+```json
+{
+  "name": "string",
+  "description": "string",
+  "price": number,
+  "imageUrl": "string (optional)",
+  "category": "string",
+  "rarity": "COMMON | RARE | EPIC | LEGENDARY"
+}
+```
+
+### GET /api/items/:id
+Get single item by ID
+
+### PUT /api/items/:id
+Update item (Admin only)
+
+**Request Body:** Same as POST
+
+### DELETE /api/items/:id
+Delete item (Admin only)
+
+---
+
+## 🎒 Owned Items
+
+### GET /api/owned-items
+Get user's owned items with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+
+**Response:**
+```json
+{
+  "ownedItems": [
+    {
+      "id": "string",
+      "userId": "string",
+      "itemId": "string",
+      "isGifted": boolean,
+      "createdAt": "datetime",
+      "item": { ... }
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+---
+
+## 🛒 Purchases
+
+### GET /api/purchases
+Get purchases list with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+
+**Response:**
+```json
+{
+  "purchases": [
+    {
+      "id": "string",
+      "userId": "string",
+      "ownedItemId": "string",
+      "createdAt": "datetime",
+      "user": { ... },
+      "ownedItem": {
+        "item": { ... }
+      }
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+### POST /api/purchases
+Purchase an item
+
+**Request Body:**
+```json
+{
+  "itemId": "string"
+}
+```
+
+**Process:**
+1. Validates item exists and user has sufficient balance
+2. Deducts price from wallet
+3. Creates OwnedItem record
+4. Creates Purchase record
+5. Creates Transaction record
+
+---
+
+## 🎁 Gifts
+
+### GET /api/gifts
+Get gifts list with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+- `type` (optional): 'sent' or 'received'
+
+**Response:**
+```json
+{
+  "gifts": [
+    {
+      "id": "string",
+      "senderId": "string",
+      "recipientId": "string",
+      "ownedItemId": "string",
+      "createdAt": "datetime",
+      "sender": { ... },
+      "recipient": { ... },
+      "ownedItem": {
+        "item": { ... }
+      }
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+### POST /api/gifts
+Send a gift
+
+**Request Body:**
+```json
+{
+  "recipientId": "string",
+  "ownedItemId": "string"
+}
+```
+
+**Process:**
+1. Validates owned item belongs to sender
+2. Validates recipient exists
+3. Transfers item ownership
+4. Creates Gift record
+5. Creates Transaction record
+
+---
+
+## 🔄 Transfers
+
+### GET /api/transfers
+Get transfers list with pagination
+
+**Query Parameters:**
+- `page` (optional, default: 1)
+- `pageSize` (optional, default: 10)
+- `type` (optional): 'sent' or 'received'
+
+**Response:**
+```json
+{
+  "transfers": [
+    {
+      "id": "string",
+      "amount": number,
+      "status": "PENDING | COMPLETED | FAILED | CANCELLED",
+      "comment": "string?",
+      "senderId": "string",
+      "receiverId": "string",
+      "createdAt": "datetime",
+      "sender": { ... },
+      "receiver": { ... }
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+### POST /api/transfers
+Transfer money to another user
+
+**Request Body:**
+```json
+{
+  "receiverId": "string",
+  "amount": number,
+  "comment": "string (optional)"
+}
+```
+
+**Process:**
+1. Validates receiver exists and has wallet
+2. Validates sender has sufficient balance
+3. Deducts from sender wallet
+4. Adds to receiver wallet
+5. Creates Transfer record
+6. Creates Transaction records for both users
+
+---
+
+## 💎 Deposit Rates
+
+### GET /api/deposit-rates
+Get all deposit rates
+
+**Query Parameters:**
+- `activeOnly` (optional): true or false
+
+**Response:**
+```json
+[
+  {
+    "id": "string",
+    "name": "string",
+    "rate": number,
+    "startDate": "datetime",
+    "endDate": "datetime",
+    "isActive": boolean,
+    "createdAt": "datetime"
+  }
+]
+```
+
+### POST /api/deposit-rates
+Create a new deposit rate (Admin only)
+
+**Request Body:**
+```json
+{
+  "name": "string",
+  "rate": number,
+  "startDate": "datetime",
+  "endDate": "datetime",
+  "isActive": boolean (optional, default: true)
+}
+```
+
+### PUT /api/deposit-rates/:id
+Update deposit rate (Admin only)
+
+**Request Body:** Same as POST
+
+### DELETE /api/deposit-rates/:id
+Delete deposit rate (Admin only)
+
+---
+
+## 📝 Error Responses
+
+All endpoints may return these error responses:
+
+### 401 Unauthorized
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+### 400 Bad Request
+```json
+{
+  "error": "Error message"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "error": "Resource not found"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+  "error": "Internal server error"
+}
+```
+
+---
+
+## 🔑 User Roles
+
+- **ADMIN**: Full access to all features including user management and approval
+- **PREMIUM**: Enhanced features (to be implemented)
+- **NORMAL**: Basic user features
+
+---
+
+## 📊 Transaction Types
+
+- **DEPOSIT**: Money deposit into wallet
+- **WITHDRAWAL**: Money withdrawal from wallet
+- **PURCHASE**: Item purchase
+- **GIFT**: Gift item to another user
+- **TRANSFER**: Money transfer between users
+
+---
+
+## 🎯 Status Types
+
+### Transaction Status
+- **PENDING**: Waiting for processing
+- **COMPLETED**: Successfully completed
+- **FAILED**: Failed transaction
+- **CANCELLED**: Cancelled transaction
+
+### Deposit/Withdrawal Status
+- **PENDING**: Waiting for admin approval
+- **APPROVED**: Approved and processed
+- **REJECTED**: Rejected by admin
+
+### Transfer Status
+- **PENDING**: Waiting for processing
+- **COMPLETED**: Successfully completed
+- **FAILED**: Failed transfer
+- **CANCELLED**: Cancelled transfer
+
+---
+
+## 🛡️ Security Notes
+
+1. All endpoints are protected by NextAuth middleware
+2. Admin-only endpoints check for ADMIN role
+3. Passwords are hashed using bcrypt
+4. Sensitive operations use database transactions for consistency
+5. Balance checks are performed before deductions
+
+---
+
+## 📦 Pagination
+
+All list endpoints support pagination with these parameters:
+- `page`: Current page number (default: 1)
+- `pageSize`: Items per page (default: 10)
+
+Response includes:
+```json
+{
+  "pagination": {
+    "totalItems": number,
+    "totalPages": number,
+    "currentPage": number,
+    "pageSize": number
+  }
+}
+```
+
