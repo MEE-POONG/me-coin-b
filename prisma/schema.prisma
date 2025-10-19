@@ -18,7 +18,7 @@ enum UserRole {
 
 enum TransactionType {
   DEPOSIT
-  WITHDRAWAL
+  WITHDRAWAL  // ← ต้องใช้ WITHDRAWAL ไม่ใช่ WITHDRAW
   PURCHASE
   GIFT
   TRANSFER
@@ -82,6 +82,18 @@ model User {
   updatedAt         DateTime       @updatedAt
 
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 model Wallet {

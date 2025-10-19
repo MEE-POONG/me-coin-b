@@ -14,7 +14,7 @@ export default function EmailTestButton({
 }: EmailTestButtonProps) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<string>('')
-  const [testEmail, setTestEmail] = useState('me.prompt.tec@gmail.com')
+  const [testEmail, setTestEmail] = useState('devilzeros00@gmail.com')
   const [showModal, setShowModal] = useState(false)
 
   const handleSendTestEmail = async (templateType: string) => {

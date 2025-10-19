@@ -8,16 +8,23 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        email: { label: 'Email / Username / Discord ID', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('กรุณากรอกอีเมลและรหัสผ่าน')
+          throw new Error('กรุณากรอกข้อมูลและรหัสผ่าน')
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        // ค้นหา user จาก email, username, หรือ discordId
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: credentials.email },
+              { username: credentials.email },
+              { discordId: credentials.email },
+            ],
+          },
         })
 
         if (!user) {

@@ -144,16 +144,20 @@ export interface SessionUser {
   role: UserRole
 }
 
-export interface PaginationParams {
+export interface PaginationResponse {
   page: number
   pageSize: number
-}
-
-export interface PaginationResponse {
-  totalItems: number
-  totalPages: number
-  currentPage: number
-  pageSize: number
+  keyword: string;
+  typeKeyword?: string;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  search?: string;
+  typeSearch?: string;
+  totalItems?: number;
+  totalPages: number;
+  isActive?: boolean;
+  isDeleted?: boolean;
 }
 
 export interface TransactionResponse {

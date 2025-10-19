@@ -30,7 +30,7 @@ export default function LoginPage() {
         // ดึงข้อมูล session เพื่อเช็คว่าเป็น role อะไร
         const response = await fetch('/api/auth/session')
         const session = await response.json()
-
+        console.log('session : ', session)
         if (session?.user?.role === 'ADMIN') {
           router.push('/admin')
         } else {
@@ -66,7 +66,7 @@ export default function LoginPage() {
                 อีเมล
               </label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"

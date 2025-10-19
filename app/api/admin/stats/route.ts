@@ -19,7 +19,7 @@ export async function GET() {
         _sum: { amount: true },
       }),
       prisma.transaction.aggregate({
-        where: { type: 'WITHDRAW' },
+        where: { type: 'WITHDRAWAL' },
         _sum: { amount: true },
       }),
     ])

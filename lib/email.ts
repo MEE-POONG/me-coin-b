@@ -22,10 +22,8 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams) {
       to,
       subject,
       html,
-      text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML สำหรับ plain text
+      text: text || html.replace(/<[^>]*>/g, ''),
     })
-
-    console.log('✅ Email sent:', info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error('❌ Error sending email:', error)
@@ -63,7 +61,7 @@ export const EmailTemplates = {
                 <a href="${resetLink}" class="button">ตั้งรหัสผ่านใหม่</a>
               </div>
               <p style="color: #dc2626; margin-top: 20px;">
-                ⚠️ <strong>หมายเหตุ:</strong> ลิงก์นี้จะหมดอายุใน 1 ชั่วโมง
+                ⚠️ <strong>หมายเหตุ:</strong> ลิงก์นี้จะหมดอายุใน 24 ชั่วโมง
               </p>
               <p style="margin-top: 20px;">
                 หากคุณไม่ได้ทำการขอรีเซ็ตรหัสผ่าน กรุณาเพิกเฉยอีเมลนี้

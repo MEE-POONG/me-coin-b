@@ -3,13 +3,14 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { ActivityLogger } from '@/lib/activity-logger'
 import { getClientInfo } from '@/lib/get-client-info'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, newPassword, confirmPassword } = body
+    const { token, newPassword, confirmPassword } = body
 
-    if (!userId || !newPassword || !confirmPassword) {
+    if (!token || !newPassword || !confirmPassword) {
       return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบ' }, { status: 400 })
     }
 
@@ -21,9 +22,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' }, { status: 400 })
     }
 
+    // Hash token เพื่อเทียบกับที่เก็บใน database
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+
+    // ค้นหา token ที่ถูกต้อง และยังไม่หมดอายุ
+    // อนุญาตให้ใช้ซ้ำได้หลายครั้งจนกว่าจะหมดอายุ
+    const resetToken = await prisma.passwordResetToken.findFirst({
+      where: {
+        tokenHash,
+        expiresAt: { gt: new Date() }, // ยังไม่หมดอายุ
+      },
+      select: {
+        id: true,
+        userId: true,
+        usedAt: true,
+      },
+    })
+
+    if (!resetToken) {
+      // Debug: ค้นหา token เพื่อดูสาเหตุ
+      const debugToken = await prisma.passwordResetToken.findFirst({
+        where: { tokenHash },
+        select: {
+          id: true,
+          expiresAt: true,
+          usedAt: true,
+        },
+      })
+
+      let errorMessage = 'ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว'
+
+      if (debugToken) {
+        if (debugToken.expiresAt < new Date()) {
+          errorMessage = 'ลิงก์หมดอายุแล้ว กรุณาขอลิงก์ใหม่'
+        }
+      } else {
+        errorMessage = 'ลิงก์ไม่ถูกต้อง กรุณาตรวจสอบลิงก์ในอีเมลอีกครั้ง'
+      }
+
+      console.log('Reset password failed:', {
+        hasToken: !!debugToken,
+        isExpired: debugToken ? debugToken.expiresAt < new Date() : null,
+        isUsed: debugToken ? !!debugToken.usedAt : null
+      })
+
+      return NextResponse.json({ error: errorMessage }, { status: 400 })
+    }
+
     // ตรวจสอบว่า user มีอยู่จริง
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: resetToken.userId },
       select: {
         id: true,
         username: true,
@@ -40,31 +88,45 @@ export async function POST(request: NextRequest) {
 
     // อัปเดตรหัสผ่าน
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: user.id },
       data: {
         password: hashedPassword,
       },
     })
 
+    // อัปเดต usedAt ให้เป็นเวลาปัจจุบัน (แต่ยังสามารถใช้ซ้ำได้จนกว่าจะหมดอายุ)
+    await prisma.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: {
+        usedAt: new Date(),
+      },
+    })
+
     // บันทึก activity log
     const { ip, userAgent } = getClientInfo(request)
-    await ActivityLogger.logActivity({
-      userId: userId,
-      action: 'UPDATE',
-      model: 'User',
-      modelId: userId,
-      description: 'รีเซ็ตรหัสผ่าน',
-      ipAddress: ip,
-      userAgent,
-    })
+    await ActivityLogger.userUpdated(
+      user.id,
+      user.id,
+      { password: '***' },
+      { password: '***' },
+      ip,
+      userAgent
+    )
 
     return NextResponse.json({
       success: true,
       message: 'เปลี่ยนรหัสผ่านสำเร็จ',
     })
   } catch (error) {
-    console.error('Error resetting password:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('❌ Error resetting password:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    })
+    return NextResponse.json({
+      error: 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน กรุณาลองใหม่อีกครั้ง',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 
