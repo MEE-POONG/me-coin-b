@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import styles from './EmailTestButton.module.scss'
+import styles from '../../styles/EmailTestButton.module.scss'
 
 interface EmailTestButtonProps {
   className?: string

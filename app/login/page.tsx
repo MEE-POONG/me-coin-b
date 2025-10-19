@@ -23,21 +23,32 @@ export default function LoginPage() {
         password,
         redirect: false,
       })
-
-      if (result?.error) {
-        setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
-      } else {
-        // ดึงข้อมูล session เพื่อเช็คว่าเป็น role อะไร
+      console.log('result : ', result)
+      
+      if (result?.ok && !result?.error) {
+        // Login สำเร็จ - ดึงข้อมูล session เพื่อเช็คว่าเป็น role อะไร
         const response = await fetch('/api/auth/session')
         const session = await response.json()
         console.log('session : ', session)
-        if (session?.user?.role === 'ADMIN') {
+
+        // ใช้ optional chaining และ fallback ไปที่ dashboard
+        const userRole = session?.user?.role
+        console.log('User role:', userRole)
+
+        if (userRole === 'ADMIN') {
           router.push('/admin')
         } else {
           router.push('/dashboard')
         }
+
+        // Force reload to ensure session is properly loaded
+        router.refresh()
+      } else {
+        // Login ไม่สำเร็จ
+        setError(result?.error || 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง')
       }
     } catch (error) {
+      console.error('Login error:', error)
       setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ')
     } finally {
       setLoading(false)
@@ -63,14 +74,14 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                อีเมล
+                อีเมล / Username / Discord ID
               </label>
               <input
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="กรอกอีเมลของคุณ"
+                placeholder="กรอกอีเมล, Username หรือ Discord ID"
                 required
               />
             </div>

@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npm run dev)",
-      "Bash(npx prisma db push)"
+      "Bash(npx prisma db push)",
+      "Bash(openssl rand -base64 32)",
+      "Bash(node -e \"console.log(require(''crypto'').randomBytes(32).toString(''base64''))\")",
+      "Bash(Get-Process)",
+      "Bash(Where-Object {$_rocessName -eq \"node\"})",
+      "Bash(Select-Object Id, ProcessName, StartTime)",
+      "Bash(node -e \"console.log(require(''crypto'').randomBytes(32).toString(''hex''))\")"
     ],
     "deny": [],
     "ask": []
