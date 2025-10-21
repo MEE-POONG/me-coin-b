@@ -104,11 +104,6 @@ export async function GET(
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
     }
 
-    // ตรวจสอบสิทธิ์: ต้องเป็น Admin หรือเจ้าของ transaction
-    if (session.user.role !== 'ADMIN' && transaction.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     return NextResponse.json(transaction)
   } catch (error) {
     console.error('Error fetching transaction:', error)

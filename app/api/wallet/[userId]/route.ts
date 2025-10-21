@@ -99,11 +99,11 @@ export async function PATCH(
     })
 
     // Log activity
-    const { ActivityLogger } = await import('@/lib/activity-logger')
+    const { logActivity } = await import('@/lib/activity-logger')
     const { getClientInfo } = await import('@/lib/get-client-info')
     const { ip, userAgent } = getClientInfo(request)
-    
-    await ActivityLogger.logActivity({
+
+    await logActivity({
       userId: session.user.id,
       action: 'UPDATE',
       model: 'Wallet',

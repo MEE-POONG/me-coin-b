@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,9 +20,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const skip = (page - 1) * pageSize
 
-    const where: any = session.user.role === 'ADMIN' 
-      ? {}
-      : { userId: session.user.id }
+    const where: any = { userId: session.user.id }
 
     if (type) where.type = type
     if (status) where.status = status

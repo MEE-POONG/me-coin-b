@@ -102,7 +102,7 @@ export default function AdminDashboardPage() {
       <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
         <h3 className="font-semibold text-blue-900 mb-3">💡 Tips สำหรับ Admin</h3>
         <ul className="space-y-2 text-sm text-blue-800">
-          <li>• คลิกปุ่ม "📧 ทดสอบ Email" เพื่อทดสอบการส่ง email ทุก template</li>
+          <li>• คลิกปุ่ม &quot;📧 ทดสอบ Email&quot; เพื่อทดสอบการส่ง email ทุก template</li>
           <li>• ตรวจสอบ Pending deposits/withdrawals ที่ต้องอนุมัติ</li>
           <li>• ดู Activity Logs เพื่อตรวจสอบการทำงานของระบบ</li>
           <li>• ตรวจสอบ Login History หากสงสัยการเข้าถึงผิดปกติ</li>

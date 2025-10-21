@@ -8,7 +8,8 @@
       "Bash(Get-Process)",
       "Bash(Where-Object {$_rocessName -eq \"node\"})",
       "Bash(Select-Object Id, ProcessName, StartTime)",
-      "Bash(node -e \"console.log(require(''crypto'').randomBytes(32).toString(''hex''))\")"
+      "Bash(node -e \"console.log(require(''crypto'').randomBytes(32).toString(''hex''))\")",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -24,12 +26,8 @@ export async function GET(request: NextRequest) {
 
     // ถ้าเป็น USER ให้ดูได้เฉพาะของตัวเอง
     // ถ้าเป็น ADMIN ดูได้ทั้งหมด หรือ filter ตาม userId
-    if (session.user.role === 'ADMIN') {
-      if (userId) {
-        where.userId = userId
-      }
-    } else {
-      where.userId = session.user.id
+    if (userId) {
+      where.userId = userId
     }
 
     if (action) where.action = action

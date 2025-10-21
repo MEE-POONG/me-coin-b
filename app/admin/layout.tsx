@@ -1,10 +1,9 @@
 import AdminLayout from '@/components/AdminLayout'
 
-export default function AdminDashboardLayout({
+export default function AdminSectionLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return <AdminLayout>{children}</AdminLayout>
 }
-

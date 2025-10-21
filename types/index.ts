@@ -147,6 +147,7 @@ export interface SessionUser {
 export interface PaginationResponse {
   page: number
   pageSize: number
+  currentPage: number
   keyword: string;
   typeKeyword?: string;
   status?: string;

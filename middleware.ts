@@ -12,7 +12,7 @@ export default withAuth(
     }
 
     // ตรวจสอบสิทธิ์ User
-    if (path.startsWith('/dashboard') && token?.role !== 'USER') {
+    if (path.startsWith('/dashboard') && token?.role === 'ADMIN') {
       return NextResponse.redirect(new URL('/admin', req.url))
     }
 

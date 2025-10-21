@@ -18,9 +18,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * pageSize
 
     let where: any = {}
-    if (session.user.role === 'ADMIN') {
-      where = {}
-    } else if (type === 'sent') {
+    if (type === 'sent') {
       where = { senderId: session.user.id }
     } else if (type === 'received') {
       where = { recipientId: session.user.id }

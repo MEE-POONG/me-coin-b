@@ -98,8 +98,8 @@ export default function TestEmailPage() {
               <div>
                 <strong>ใส่ใน .env</strong>
                 <div className="bg-gray-800 text-green-400 p-2 rounded mt-1 font-mono text-xs">
-                  GMAIL_USER="me.prompt.tec@gmail.com"<br/>
-                  GMAIL_PASSWORD="your-app-password"
+                  GMAIL_USER=&quot;me.prompt.tec@gmail.com&quot;<br/>
+                  GMAIL_PASSWORD=&quot;your-app-password&quot;
                 </div>
               </div>
             </div>

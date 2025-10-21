@@ -77,7 +77,7 @@ export default function AdminTransactionsPage() {
                     })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {transaction.user?.name || '-'}
+                    {/* {transaction.user?.name || '-'} */}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -91,7 +91,7 @@ export default function AdminTransactionsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {transaction.description || '-'}
+                    {/* {transaction.description || '-'} */}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                     <span
@@ -104,7 +104,7 @@ export default function AdminTransactionsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                    {transaction.balanceAfter.toLocaleString()} บาท
+                    {/* {transaction.balanceAfter.toLocaleString()} บาท */}
                   </td>
                 </tr>
               ))}
@@ -121,7 +121,7 @@ export default function AdminTransactionsPage() {
         {data && data.pagination.totalPages > 1 && (
           <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
             <div className="text-sm text-gray-700">
-              หน้า {data.pagination.currentPage} จาก {data.pagination.totalPages} ({data.pagination.totalItems} รายการ)
+              {/* หน้า {data.pagination.currentPage} จาก {data.pagination.totalPages} ({data.pagination.totalItems} รายการ) */}
             </div>
             <div className="flex gap-2">
               <button

@@ -8,6 +8,25 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 
+  const getTransactionDescription = (transaction: any) => {
+    if (transaction.deposit) {
+      return transaction.deposit.comment || 'ฝากเงิน'
+    }
+    if (transaction.withdrawal) {
+      return transaction.withdrawal.comment || 'ถอนเงิน'
+    }
+    if (transaction.transfer) {
+      return transaction.transfer.comment || 'โอนเงิน'
+    }
+    if (transaction.purchase) {
+      return transaction.purchase.ownedItem?.item?.name || 'ซื้อไอเทม'
+    }
+    if (transaction.gift) {
+      return 'รับของขวัญ'
+    }
+    return '-'
+  }
+
   useEffect(() => {
     fetchTransactions(currentPage)
   }, [currentPage])
@@ -85,7 +104,7 @@ export default function HistoryPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {transaction.description || '-'}
+                    {getTransactionDescription(transaction)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                     <span
@@ -98,7 +117,7 @@ export default function HistoryPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                    {transaction.balanceAfter.toLocaleString()} บาท
+                    {(transaction as any).wallet?.balance?.toLocaleString() || '-'} บาท
                   </td>
                 </tr>
               ))}

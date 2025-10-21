@@ -46,9 +46,7 @@ export default function ResetTokensDebugPage() {
   }, [status, session, router])
 
   useEffect(() => {
-    if (session?.user?.role === 'ADMIN') {
-      fetchTokens()
-    }
+    fetchTokens()
   }, [session])
 
   const fetchTokens = async () => {
@@ -103,9 +101,7 @@ export default function ResetTokensDebugPage() {
     )
   }
 
-  if (!session || session.user.role !== 'ADMIN') {
-    return null
-  }
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -130,9 +126,8 @@ export default function ResetTokensDebugPage() {
 
         {/* Message */}
         {message && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-          }`}>
+          <div className={`mb-6 p-4 rounded-lg ${message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}>
             {message}
           </div>
         )}
@@ -223,13 +218,12 @@ export default function ResetTokensDebugPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          token.isValid
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${token.isValid
                             ? 'bg-green-100 text-green-800'
                             : token.isUsed
                               ? 'bg-gray-100 text-gray-800'
                               : 'bg-yellow-100 text-yellow-800'
-                        }`}
+                          }`}
                       >
                         {token.status}
                       </span>

@@ -13,9 +13,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     // ตรวจสอบว่าเป็น Admin หรือไม่
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+
 
     // ดึงข้อมูล reset tokens พร้อม user info
     const tokens = await prisma.passwordResetToken.findMany({
@@ -91,9 +89,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+
 
     const now = new Date()
 

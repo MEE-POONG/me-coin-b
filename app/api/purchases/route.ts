@@ -16,9 +16,7 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '10')
     const skip = (page - 1) * pageSize
 
-    const where = session.user.role === 'ADMIN' 
-      ? {}
-      : { userId: session.user.id }
+    const where = { userId: session.user.id }
 
     const [purchases, totalItems] = await Promise.all([
       prisma.purchase.findMany({

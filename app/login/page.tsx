@@ -24,7 +24,7 @@ export default function LoginPage() {
         redirect: false,
       })
       console.log('result : ', result)
-      
+
       if (result?.ok && !result?.error) {
         // Login สำเร็จ - ดึงข้อมูล session เพื่อเช็คว่าเป็น role อะไร
         const response = await fetch('/api/auth/session')
@@ -34,12 +34,7 @@ export default function LoginPage() {
         // ใช้ optional chaining และ fallback ไปที่ dashboard
         const userRole = session?.user?.role
         console.log('User role:', userRole)
-
-        if (userRole === 'ADMIN') {
-          router.push('/admin')
-        } else {
-          router.push('/dashboard')
-        }
+        router.push('/dashboard')
 
         // Force reload to ensure session is properly loaded
         router.refresh()

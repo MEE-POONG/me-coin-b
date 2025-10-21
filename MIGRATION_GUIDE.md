@@ -115,7 +115,7 @@ async function migrateUsers() {
         password: oldUser.password,
         accountNumber: generateAccountNumber(),
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + oldUser.id,
-        role: oldUser.role === 'ADMIN' ? 'ADMIN' : 'NORMAL',
+        role:`ADMIN`,
       },
     })
     
