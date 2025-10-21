@@ -1,148 +1,4 @@
-import {
-  UserRole,
-  TransactionType,
-  DepositStatus,
-  ItemRarity,
-  TransferStatus,
-  TransactionStatus,
-  WithdrawalStatus
-} from '@prisma/client'
-
-export interface User {
-  id: string
-  discordId?: string
-  email: string
-  username: string
-  accountNumber: string
-  avatar: string
-  role: UserRole
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface Wallet {
-  id: string
-  balance: number
-  userId: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface Transaction {
-  id: string
-  amount: number
-  type: TransactionType
-  status: TransactionStatus
-  slipImage?: string
-  userId: string
-  walletId: string
-  depositId?: string
-  withdrawalId?: string
-  purchaseId?: string
-  giftId?: string
-  transferId?: string
-  createdAt: Date
-  updatedAt: Date
-  user?: User
-}
-
-export interface Deposit {
-  id: string
-  amount: number
-  slipImage: string
-  status: DepositStatus
-  rate: number
-  comment?: string
-  userId: string
-  createdAt: Date
-  updatedAt: Date
-  user?: User
-}
-
-export interface Withdrawal {
-  id: string
-  amount: number
-  status: WithdrawalStatus
-  comment?: string
-  userId: string
-  createdAt: Date
-  updatedAt: Date
-  user?: User
-}
-
-export interface Item {
-  id: string
-  name: string
-  description: string
-  price: number
-  imageUrl?: string
-  category: string
-  rarity: ItemRarity
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface OwnedItem {
-  id: string
-  userId: string
-  itemId: string
-  isGifted: boolean
-  createdAt: Date
-  updatedAt: Date
-  item?: Item
-}
-
-export interface Purchase {
-  id: string
-  userId: string
-  ownedItemId: string
-  createdAt: Date
-  updatedAt: Date
-  ownedItem?: OwnedItem
-}
-
-export interface Gift {
-  id: string
-  senderId: string
-  recipientId: string
-  ownedItemId: string
-  createdAt: Date
-  updatedAt: Date
-  sender?: User
-  recipient?: User
-  ownedItem?: OwnedItem
-}
-
-export interface DepositRate {
-  id: string
-  name: string
-  rate: number
-  startDate: Date
-  endDate: Date
-  isActive: boolean
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface Transfer {
-  id: string
-  amount: number
-  status: TransferStatus
-  comment?: string
-  senderId: string
-  receiverId: string
-  createdAt: Date
-  updatedAt: Date
-  sender?: User
-  receiver?: User
-}
-
-export interface SessionUser {
-  id: string
-  email: string
-  username: string
-  role: UserRole
-}
+import { Transfer, Gift, Purchase, OwnedItem, Deposit, Transaction, User, Wallet, Withdrawal, ActivityLog, LoginHistory, Item, Prisma } from "@prisma/client";
 
 export interface PaginationResponse {
   page: number
@@ -161,63 +17,86 @@ export interface PaginationResponse {
   isDeleted?: boolean;
 }
 
-export interface TransactionResponse {
-  transactions: Transaction[]
-  pagination: PaginationResponse
+/** ---- กลุ่ม WithRelations (ประกอบจากชนิดของ Prisma ล้วน ๆ) ---- */
+
+/** OwnedItem พร้อมข้อมูล Item แบบเต็ม (หรือจะ Pick บางฟิลด์ก็ได้) */
+export interface OwnedItemWithItem extends OwnedItem {
+  item: Item
 }
 
-export interface DepositResponse {
+/** Purchase -> เชื่อมไป OwnedItem และ Item */
+export interface PurchaseWithItem extends Purchase {
+  ownedItem: OwnedItem & { item: Item }
+}
+
+/** Gift (ผู้ส่ง/ผู้รับ และ item ของของที่ให้) */
+export interface GiftOutgoing extends Gift {
+  recipient: Pick<User, 'id' | 'username' | 'email'>
+  ownedItem: OwnedItem & { item: Item }
+}
+export interface GiftIncoming extends Gift {
+  sender: Pick<User, 'id' | 'username' | 'email'>
+  ownedItem: OwnedItem & { item: Item }
+}
+
+/** Transfer (ฝั่งส่ง/รับ) */
+export interface TransferOutgoing extends Transfer {
+  receiver: Pick<User, 'id' | 'username' | 'email'>
+}
+export interface TransferIncoming extends Transfer {
+  sender: Pick<User, 'id' | 'username' | 'email'>
+}
+
+/** ---- ตัวหลัก: User ที่ join ความสัมพันธ์ยอดนิยม ---- */
+export interface UserJoined extends User {
+  wallet?: Wallet | null
   deposits: Deposit[]
-  pagination: PaginationResponse
-}
-
-export interface WithdrawalResponse {
   withdrawals: Withdrawal[]
-  pagination: PaginationResponse
+  transactions: Transaction[]
+
+  ownedItems: OwnedItemWithItem[]
+  purchases: PurchaseWithItem[]
+
+  sentGifts: GiftOutgoing[]
+  receivedGifts: GiftIncoming[]
+
+  sentTransfers: TransferOutgoing[]
+  receivedTransfers: TransferIncoming[]
+
+  activityLogs: ActivityLog[]
+  loginHistory: LoginHistory[]
 }
 
-export interface ItemResponse {
-  items: Item[]
-  pagination: PaginationResponse
-}
+/* -------------------------------------------
+   (ตัวเลือกเสริม) ชนิดที่ sync กับ Prisma อัตโนมัติ
+   ถ้าคุณมี include shape ตายตัว แนะนำประกาศแบบนี้เพิ่ม:
+------------------------------------------- */
 
-export interface TransferResponse {
-  transfers: Transfer[]
-  pagination: PaginationResponse
-}
-
-export interface ActivityLog {
-  id: string
-  userId: string
-  action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'APPROVE' | 'REJECT'
-  model: string
-  modelId?: string
-  oldData?: string
-  newData?: string
-  description?: string
-  ipAddress?: string
-  userAgent?: string
-  createdAt: Date
-  user?: User
-}
-
-export interface LoginHistory {
-  id: string
-  userId: string
-  ipAddress: string
-  userAgent: string
-  success: boolean
-  failReason?: string
-  createdAt: Date
-  user?: User
-}
-
-export interface ActivityLogResponse {
-  logs: ActivityLog[]
-  pagination: PaginationResponse
-}
-
-export interface LoginHistoryResponse {
-  history: LoginHistory[]
-  pagination: PaginationResponse
-}
+export const userJoinedInclude = {
+  wallet: true,
+  deposits: true,
+  withdrawals: true,
+  transactions: true,
+  ownedItems: { include: { item: true } },
+  purchases: { include: { ownedItem: { include: { item: true } } } },
+  sentGifts: {
+    include: {
+      recipient: { select: { id: true, username: true, email: true } },
+      ownedItem: { include: { item: true } },
+    },
+  },
+  receivedGifts: {
+    include: {
+      sender: { select: { id: true, username: true, email: true } },
+      ownedItem: { include: { item: true } },
+    },
+  },
+  sentTransfers: {
+    include: { receiver: { select: { id: true, username: true, email: true } } },
+  },
+  receivedTransfers: {
+    include: { sender: { select: { id: true, username: true, email: true } } },
+  },
+  activityLogs: true,
+  loginHistory: true,
+} satisfies Prisma.UserInclude

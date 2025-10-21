@@ -18,7 +18,7 @@ enum UserRole {
 
 enum TransactionType {
   DEPOSIT
-  WITHDRAWAL  // ← ต้องใช้ WITHDRAWAL ไม่ใช่ WITHDRAW
+  WITHDRAWAL // ← ต้องใช้ WITHDRAWAL ไม่ใช่ WITHDRAW
   PURCHASE
   GIFT
   TRANSFER
@@ -63,6 +63,8 @@ model User {
   email             String         @unique
   password          String
   username          String         @unique
+  name              String?
+  phone             String?
   accountNumber     String         @unique
   avatar            String         @default("https://via.placeholder.com/150")
   role              UserRole       @default(NORMAL)
@@ -80,17 +82,18 @@ model User {
   loginHistory      LoginHistory[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  isDeleted         Boolean        @default(false)
 
   @@map("users")
 }
 
 model PasswordResetToken {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  tokenHash String   @unique
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@map("password_reset_tokens")
@@ -267,11 +270,11 @@ model ActivityLog {
   userId      String         @db.ObjectId
   user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   action      ActivityAction
-  model       String         // ชื่อ model ที่ถูกกระทำ เช่น "User", "Item", "Transaction"
-  modelId     String?        // ID ของ record ที่ถูกกระทำ
-  oldData     String?        // JSON string ของข้อมูลเดิม (สำหรับ UPDATE, DELETE)
-  newData     String?        // JSON string ของข้อมูลใหม่ (สำหรับ CREATE, UPDATE)
-  description String?        // คำอธิบายเพิ่มเติม
+  model       String // ชื่อ model ที่ถูกกระทำ เช่น "User", "Item", "Transaction"
+  modelId     String? // ID ของ record ที่ถูกกระทำ
+  oldData     String? // JSON string ของข้อมูลเดิม (สำหรับ UPDATE, DELETE)
+  newData     String? // JSON string ของข้อมูลใหม่ (สำหรับ CREATE, UPDATE)
+  description String? // คำอธิบายเพิ่มเติม
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime       @default(now())

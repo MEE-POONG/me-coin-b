@@ -1,15 +1,9 @@
 'use client'
 
+import { User } from '@prisma/client'
 import { useEffect, useState } from 'react'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-  balance: number
-  createdAt: string
-}
+
 
 interface UsersResponse {
   users: User[]
@@ -33,7 +27,7 @@ export default function UsersPage() {
   const fetchUsers = async (page: number) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/admin/users?page=${page}&pageSize=10`)
+      const res = await fetch(`/api/users?page=${page}&pageSize=10`)
       if (res.ok) {
         const data = await res.json()
         setData(data)
@@ -80,13 +74,13 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data?.users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+              {data?.users?.map((user: User) => (
+                <tr key={user?.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {user.name}
+                    {user?.username}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.email}
+                    {user?.email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
@@ -94,10 +88,10 @@ export default function UsersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                    {user.balance.toLocaleString()} บาท
+                    {user?.accountNumber.toLocaleString()} บาท
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString('th-TH', {
+                    {new Date(user?.createdAt).toLocaleDateString('th-TH', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
@@ -109,7 +103,7 @@ export default function UsersPage() {
           </table>
         </div>
 
-        {data && data.users.length === 0 && (
+        {data && data?.users?.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             ยังไม่มีผู้ใช้ในระบบ
           </div>

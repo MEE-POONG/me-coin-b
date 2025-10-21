@@ -1,75 +1,115 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+import { PaginationResponse } from '@/types'
 
-export const dynamic = 'force-dynamic'
+const baseUserSelect = {
+  id: true,
+  discordId: true,
+  email: true,
+  username: true,
+  accountNumber: true,
+  avatar: true,
+  role: true,
+  createdAt: true,
+  updatedAt: true,
+} as const
 
-/**
- * GET /api/users?search={identifier}
- *
- * Public endpoint for forgot password - searches for user by email, username, or discordId
- * Returns minimal user info with masked email for security
- */
-export async function GET(request: NextRequest) {
+export async function GET(req: Request) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const search = searchParams.get('search')
-
-    if (!search) {
-      return NextResponse.json({ error: 'กรุณาระบุข้อมูลที่ต้องการค้นหา' }, { status: 400 })
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchTerm = search.trim()
+    // ✅ ดึง query parameters
+    const { searchParams } = new URL(req.url)
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const pageSize = Math.max(1, parseInt(searchParams.get('pageSize') || '10'))
+    const keyword = searchParams.get('keyword') || ''
+    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
+    const isDeleted = searchParams.get('isDeleted') === 'false'
 
-    // ค้นหาผู้ใช้จาก email, username, หรือ discordId
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: { equals: searchTerm, mode: 'insensitive' } },
-          { username: { equals: searchTerm, mode: 'insensitive' } },
-          { discordId: { equals: searchTerm, mode: 'insensitive' } },
-        ],
-      },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-      },
-    })
-
-    if (!user) {
-      return NextResponse.json({ user: null })
+    // ✅ กรองข้อมูล (ตัวอย่างสำหรับ users)
+    const where: any = {
+      isDeleted,
     }
 
-    // สร้าง masked email เพื่อความปลอดภัย
-    const maskedEmail = maskEmail(user.email)
-
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        maskedEmail,
-      },
+    // ✅ นับทั้งหมด
+    const totalItems = await prisma.user.count({ where })
+    const totalPages = Math.ceil(totalItems / pageSize)
+    const safePage = Math.min(page, totalPages)
+    // ✅ ดึงข้อมูลตามหน้า
+    const users = await prisma.user.findMany({
+      where,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (safePage - 1) * pageSize,
+      take: pageSize,
     })
+
+    // ✅ สร้าง response แบบ PaginationResponse
+    const response: PaginationResponse = {
+      page,
+      pageSize,
+      currentPage: page,
+      keyword,
+      sortBy,
+      sortOrder,
+      totalItems,
+      totalPages,
+      isDeleted,
+    }
+
+    return NextResponse.json({ pagination: response, data: users })
   } catch (error) {
-    console.error('Error searching user:', error)
-    return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการค้นหา' }, { status: 500 })
+    console.error('Error fetching users:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-/**
- * Mask email address for security
- * Example: user@example.com -> u***@example.com
- */
-function maskEmail(email: string): string {
-  const [localPart, domain] = email.split('@')
-  if (!localPart || !domain) return email
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  if (localPart.length <= 2) {
-    return `${localPart[0]}***@${domain}`
+    const body = await req.json()
+    const { email, password, username, accountNumber, avatar, role } = body ?? {}
+
+    // inline checks (แทน zod)
+    if (
+      !email || typeof email !== 'string' ||
+      !password || typeof password !== 'string' || password.length < 8 ||
+      !username || typeof username !== 'string' || username.length < 3 ||
+      !accountNumber || typeof accountNumber !== 'string' || accountNumber.length < 3
+    ) {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+
+    const hashed = await bcrypt.hash(password, 12)
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashed,
+        username,
+        accountNumber,
+        avatar: avatar ?? undefined,
+        role: role === 'ADMIN' ? 'ADMIN' : 'NORMAL',
+      },
+      select: baseUserSelect,
+    })
+
+    return NextResponse.json(user, { status: 201 })
+  } catch (error: any) {
+    console.error('Users POST error:', error)
+    if (error?.code === 'P2002') {
+      return NextResponse.json({ error: 'Email/username/accountNumber already exists' }, { status: 409 })
+    }
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  const visibleChars = Math.min(2, Math.floor(localPart.length / 3))
-  const masked = localPart.slice(0, visibleChars) + '***'
-  return `${masked}@${domain}`
 }

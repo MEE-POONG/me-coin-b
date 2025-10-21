@@ -31,11 +31,11 @@
 
 ### 👤 Users (6)
 - ✅ `GET /api/users/me` - ดูข้อมูลตัวเอง
-- ✅ `GET /api/admin/users` - ดูผู้ใช้ทั้งหมด (Admin)
-- ✅ `GET /api/admin/users/:id` - ดูข้อมูล user เดี่ยว (Admin) 🆕
-- ✅ `PUT /api/admin/users/:id` - แก้ไข user (Admin) 🆕
-- ✅ `DELETE /api/admin/users/:id` - ลบ user (Admin) 🆕
-- ✅ `GET /api/admin/stats` - สถิติภาพรวม (Admin)
+- ✅ `GET /api/users` - ดูผู้ใช้ทั้งหมด (Admin)
+- ✅ `GET /api/users/:id` - ดูข้อมูล user เดี่ยว (Admin) 🆕
+- ✅ `PUT /api/users/:id` - แก้ไข user (Admin) 🆕
+- ✅ `DELETE /api/users/:id` - ลบ user (Admin) 🆕
+- ✅ `GET /api/stats` - สถิติภาพรวม (Admin)
 
 ### 💰 Wallet (4)
 - ✅ `GET /api/wallet` - ดู wallet ตัวเอง
@@ -51,13 +51,13 @@
 - ✅ `GET /api/deposits` - ดูรายการฝาก
 - ✅ `POST /api/deposits` - สร้างคำขอฝาก
 - ✅ `PATCH /api/deposits/:id` - อนุมัติ/ปฏิเสธ (Admin)
-- ✅ `GET /api/admin/deposits/pending` - ดูคำขอฝากที่รอ (Admin) 🆕
+- ✅ `GET /api/deposits/pending` - ดูคำขอฝากที่รอ (Admin) 🆕
 
 ### 💸 Withdrawals (4)
 - ✅ `GET /api/withdrawals` - ดูรายการถอน
 - ✅ `POST /api/withdrawals` - สร้างคำขอถอน
 - ✅ `PATCH /api/withdrawals/:id` - อนุมัติ/ปฏิเสธ (Admin)
-- ✅ `GET /api/admin/withdrawals/pending` - ดูคำขอถอนที่รอ (Admin) 🆕
+- ✅ `GET /api/withdrawals/pending` - ดูคำขอถอนที่รอ (Admin) 🆕
 
 ### 🛍️ Items (5)
 - ✅ `GET /api/items` - ดูรายการไอเทม
@@ -92,16 +92,16 @@
 - ✅ `GET /api/login-history` - ดูประวัติ login
 
 ### 📊 Admin Dashboard (1) 🆕
-- ✅ `GET /api/admin/dashboard` - Dashboard ครบวงจร
+- ✅ `GET /api/dashboard` - Dashboard ครบวงจร
 
 ---
 
 ## 🎯 API ที่เพิ่มใหม่ (7 endpoints)
 
 ### 1. ✅ จัดการ User แบบเจาะจง
-- `GET /api/admin/users/:id` - ดูข้อมูล user พร้อม wallet และสถิติ
-- `PUT /api/admin/users/:id` - แก้ไข username, email, role, avatar
-- `DELETE /api/admin/users/:id` - ลบ user (ป้องกันลบตัวเอง)
+- `GET /api/users/:id` - ดูข้อมูล user พร้อม wallet และสถิติ
+- `PUT /api/users/:id` - แก้ไข username, email, role, avatar
+- `DELETE /api/users/:id` - ลบ user (ป้องกันลบตัวเอง)
 
 ### 2. ✅ จัดการ Wallet ของ User อื่น
 - `GET /api/wallet/:userId` - ดู wallet ของ user อื่น (Admin หรือตัวเอง)
@@ -111,11 +111,11 @@
 - `GET /api/transactions/:id` - ดูข้อมูลครบถ้วนของ transaction เดี่ยว
 
 ### 4. ✅ รายการรอ Admin อนุมัติ
-- `GET /api/admin/deposits/pending` - คำขอฝากที่รอ (เรียงเก่าสุดก่อน)
-- `GET /api/admin/withdrawals/pending` - คำขอถอนที่รอ (เรียงเก่าสุดก่อน)
+- `GET /api/deposits/pending` - คำขอฝากที่รอ (เรียงเก่าสุดก่อน)
+- `GET /api/withdrawals/pending` - คำขอถอนที่รอ (เรียงเก่าสุดก่อน)
 
 ### 5. ✅ Dashboard Admin ครบวงจร
-- `GET /api/admin/dashboard` - สถิติครบทุกมิติ
+- `GET /api/dashboard` - สถิติครบทุกมิติ
 
 ---
 
@@ -123,7 +123,7 @@
 
 ### Admin Dashboard Endpoint
 ```typescript
-GET /api/admin/dashboard
+GET /api/dashboard
 
 Response:
 {
@@ -162,8 +162,8 @@ Body: {
 
 ### Pending Approvals
 ```typescript
-GET /api/admin/deposits/pending
-GET /api/admin/withdrawals/pending
+GET /api/deposits/pending
+GET /api/withdrawals/pending
 
 // เรียงเก่าสุดก่อน เพื่อ Admin ดูตามลำดับ
 // รวม user info และ wallet balance
@@ -176,9 +176,9 @@ GET /api/admin/withdrawals/pending
 | Endpoint | USER | PREMIUM | ADMIN |
 |----------|------|---------|-------|
 | GET /api/users/me | ✅ | ✅ | ✅ |
-| GET /api/admin/users | ❌ | ❌ | ✅ |
-| PUT /api/admin/users/:id | ❌ | ❌ | ✅ |
-| DELETE /api/admin/users/:id | ❌ | ❌ | ✅ |
+| GET /api/users | ❌ | ❌ | ✅ |
+| PUT /api/users/:id | ❌ | ❌ | ✅ |
+| DELETE /api/users/:id | ❌ | ❌ | ✅ |
 | GET /api/wallet | ✅ | ✅ | ✅ |
 | GET /api/wallet/:userId | 👤 | 👤 | ✅ |
 | PATCH /api/wallet/:userId | ❌ | ❌ | ✅ |
@@ -186,10 +186,10 @@ GET /api/admin/withdrawals/pending
 | GET /api/transactions/:id | 👤 | 👤 | ✅ |
 | POST /api/deposits | ✅ | ✅ | ✅ |
 | PATCH /api/deposits/:id | ❌ | ❌ | ✅ |
-| GET /api/admin/deposits/pending | ❌ | ❌ | ✅ |
+| GET /api/deposits/pending | ❌ | ❌ | ✅ |
 | POST /api/withdrawals | ✅ | ✅ | ✅ |
 | PATCH /api/withdrawals/:id | ❌ | ❌ | ✅ |
-| GET /api/admin/withdrawals/pending | ❌ | ❌ | ✅ |
+| GET /api/withdrawals/pending | ❌ | ❌ | ✅ |
 | POST /api/items | ❌ | ❌ | ✅ |
 | PUT /api/items/:id | ❌ | ❌ | ✅ |
 | DELETE /api/items/:id | ❌ | ❌ | ✅ |
@@ -198,7 +198,7 @@ GET /api/admin/withdrawals/pending
 | POST /api/transfers | ✅ | ✅ | ✅ |
 | GET /api/activity-logs | 👤 | 👤 | ✅ |
 | GET /api/login-history | 👤 | 👤 | ✅ |
-| GET /api/admin/dashboard | ❌ | ❌ | ✅ |
+| GET /api/dashboard | ❌ | ❌ | ✅ |
 
 **สัญลักษณ์:**
 - ✅ = เข้าถึงได้
@@ -210,8 +210,8 @@ GET /api/admin/withdrawals/pending
 ## 🎨 Activity Logging
 
 API ที่มีการบันทึก Activity Log:
-- ✅ PUT /api/admin/users/:id - userUpdated
-- ✅ DELETE /api/admin/users/:id - userDeleted
+- ✅ PUT /api/users/:id - userUpdated
+- ✅ DELETE /api/users/:id - userDeleted
 - ✅ PATCH /api/wallet/:userId - wallet adjustment
 - ✅ PATCH /api/deposits/:id - depositApproved/Rejected
 - ✅ PATCH /api/withdrawals/:id - withdrawalApproved/Rejected
@@ -257,13 +257,13 @@ API ที่มีการบันทึก Activity Log:
 หากต้องการเพิ่ม API เพิ่มเติม:
 
 ### Suggestions:
-1. ✨ GET /api/admin/reports - สร้าง reports ต่างๆ
+1. ✨ GET /api/reports - สร้าง reports ต่างๆ
 2. ✨ POST /api/users/register - สมัครสมาชิก
 3. ✨ PUT /api/users/me - แก้ไขข้อมูลตัวเอง
 4. ✨ PUT /api/users/me/password - เปลี่ยนรหัสผ่าน
-5. ✨ GET /api/admin/analytics - วิเคราะห์ข้อมูล
+5. ✨ GET /api/analytics - วิเคราะห์ข้อมูล
 6. ✨ POST /api/notifications - ระบบแจ้งเตือน
-7. ✨ GET /api/admin/exports - Export ข้อมูล CSV/Excel
+7. ✨ GET /api/exports - Export ข้อมูล CSV/Excel
 
 ---
 
