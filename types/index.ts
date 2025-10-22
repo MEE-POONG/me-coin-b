@@ -1,9 +1,8 @@
 import { Transfer, Gift, Purchase, OwnedItem, Deposit, Transaction, User, Wallet, Withdrawal, ActivityLog, LoginHistory, Item, Prisma } from "@prisma/client";
-
 export interface PaginationResponse {
-  page: number
-  pageSize: number
-  currentPage: number
+  page: number;
+  pageSize: number;
+  currentPage: number;
   keyword: string;
   typeKeyword?: string;
   status?: string;
@@ -16,7 +15,6 @@ export interface PaginationResponse {
   isActive?: boolean;
   isDeleted?: boolean;
 }
-
 /** ---- กลุ่ม WithRelations (ประกอบจากชนิดของ Prisma ล้วน ๆ) ---- */
 
 /** OwnedItem พร้อมข้อมูล Item แบบเต็ม (หรือจะ Pick บางฟิลด์ก็ได้) */

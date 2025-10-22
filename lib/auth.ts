@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
             throw new Error('กรุณากรอกข้อมูลและรหัสผ่าน')
           }
 
-          // ค้นหา user จาก email, username, หรือ discordId
+          // ค้นหา user ปกติก่อน
           const user = await prisma.user.findFirst({
             where: {
               OR: [
@@ -33,9 +33,42 @@ export const authOptions: NextAuthOptions = {
             },
           })
 
+          // หากไม่พบ user ปกติ ให้ค้นหา admin
           if (!user) {
-            console.log('❌ [NextAuth] User not found:', credentials.email)
-            throw new Error('ไม่พบผู้ใช้นี้ในระบบ')
+            const adminUser = await prisma.adminUser.findFirst({
+              where: {
+                OR: [
+                  { email: credentials.email },
+                  { username: credentials.email },
+                ],
+              },
+            })
+
+            if (!adminUser) {
+              console.log('❌ [NextAuth] User not found:', credentials.email)
+              throw new Error('ไม่พบผู้ใช้นี้ในระบบ')
+            }
+
+            console.log('✅ [NextAuth] Admin found:', { email: adminUser.email })
+
+            const isPasswordValid = await bcrypt.compare(
+              credentials.password,
+              adminUser.password
+            )
+
+            if (!isPasswordValid) {
+              console.log('❌ [NextAuth] Password invalid for admin:', adminUser.email)
+              throw new Error('รหัสผ่านไม่ถูกต้อง')
+            }
+
+            console.log('✅ [NextAuth] Admin login successful for:', adminUser.email)
+
+            return {
+              id: adminUser.id,
+              email: adminUser.email,
+              name: adminUser.username,
+              role: 'ADMIN' as UserRole,
+            }
           }
 
           console.log('✅ [NextAuth] User found:', { email: user.email, role: user.role })

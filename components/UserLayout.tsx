@@ -17,7 +17,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex">
-          <Sidebar items={userMenuItems} />
+          {/* <Sidebar items={userMenuItems} /> */}
           <main className="flex-1 p-8">{children}</main>
         </div>
       </div>

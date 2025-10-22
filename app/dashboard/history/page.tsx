@@ -1,10 +1,12 @@
 'use client'
 
+import { PaginationResponse } from '@/types'
+import { Transaction } from '@prisma/client'
 import { useEffect, useState } from 'react'
-import { TransactionResponse } from '@/types'
 
 export default function HistoryPage() {
-  const [data, setData] = useState<TransactionResponse | null>(null)
+  const [transactions, setTransactions] = useState<Transaction[] | null>(null)
+  const [pagination, setPagination] = useState<PaginationResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -37,7 +39,8 @@ export default function HistoryPage() {
       const res = await fetch(`/api/transactions?page=${page}&pageSize=10`)
       if (res.ok) {
         const data = await res.json()
-        setData(data)
+        setTransactions(data.transactions)
+        setPagination(data.pagination)
       }
     } catch (error) {
       console.error('Error fetching transactions:', error)
@@ -46,7 +49,7 @@ export default function HistoryPage() {
     }
   }
 
-  if (loading && !data) {
+  if (loading && !transactions) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-xl text-gray-600">กำลังโหลด...</div>
@@ -81,7 +84,7 @@ export default function HistoryPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data?.transactions.map((transaction) => (
+              {transactions?.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {new Date(transaction.createdAt).toLocaleDateString('th-TH', {
@@ -125,16 +128,16 @@ export default function HistoryPage() {
           </table>
         </div>
 
-        {data && data.transactions.length === 0 && (
+        {transactions && transactions.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             ยังไม่มีประวัติการใช้งาน
           </div>
         )}
 
-        {data && data.pagination.totalPages > 1 && (
+        {pagination && pagination.totalPages > 1 && (
           <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
             <div className="text-sm text-gray-700">
-              หน้า {data.pagination.currentPage} จาก {data.pagination.totalPages} ({data.pagination.totalItems} รายการ)
+              หน้า {pagination.currentPage} จาก {pagination.totalPages} ({pagination.totalItems} รายการ)
             </div>
             <div className="flex gap-2">
               <button
@@ -145,8 +148,8 @@ export default function HistoryPage() {
                 ก่อนหน้า
               </button>
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(data.pagination.totalPages, prev + 1))}
-                disabled={currentPage === data.pagination.totalPages}
+                onClick={() => setCurrentPage((prev) => Math.min(pagination.totalPages, prev + 1))}
+                disabled={currentPage === pagination.totalPages}
                 className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ถัดไป

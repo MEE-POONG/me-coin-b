@@ -327,7 +327,7 @@ import { useEffect, useState } from 'react'
 import { ActivityLogResponse } from '@/types'
 
 export default function ActivityLogsPage() {
-  const [data, setData] = useState<ActivityLogResponse | null>(null)
+  const [dataList, setDataList] = useState<ActivityLogResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 

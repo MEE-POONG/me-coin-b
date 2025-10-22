@@ -8,6 +8,7 @@ import { useState } from 'react'
 const adminMenuItems = [
   { href: '/admin', label: 'แดชบอร์ด', icon: '📊' },
   { href: '/admin/users', label: 'จัดการผู้ใช้', icon: '👥' },
+  { href: '/admin/admins', label: 'จัดการ Admin', icon: '👨‍💼' },
   { href: '/admin/transactions', label: 'ประวัติทั้งหมด', icon: '📜' },
   { href: '/admin/test-email', label: 'ทดสอบ Email', icon: '📧' },
 ]

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { PaginationResponse } from '@/types'
+import { Prisma } from '@prisma/client'
 
 const baseUserSelect = {
   id: true,
@@ -17,6 +18,21 @@ const baseUserSelect = {
   updatedAt: true,
 } as const
 
+
+/** แปลง query param -> boolean | undefined (รองรับ 'true'|'false'|ไม่ส่งมา) */
+function parseBoolParam(v: string | null): boolean | undefined {
+  if (v == null) return undefined
+  const s = v.trim().toLowerCase()
+  if (s === 'true') return true
+  if (s === 'false') return false
+  return undefined
+}
+
+/** ปลอดภัยเรื่องชื่อฟิลด์สำหรับ orderBy */
+const USER_SORT_WHITELIST: (keyof Prisma.UserOrderByWithRelationInput)[] = [
+  'createdAt', 'updatedAt', 'username', 'email', 'id'
+]
+
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -24,39 +40,62 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // ✅ ดึง query parameters
     const { searchParams } = new URL(req.url)
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
-    const pageSize = Math.max(1, parseInt(searchParams.get('pageSize') || '10'))
-    const keyword = searchParams.get('keyword') || ''
-    const sortBy = searchParams.get('sortBy') || 'createdAt'
-    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
-    const isDeleted = searchParams.get('isDeleted') === 'false'
 
-    // ✅ กรองข้อมูล (ตัวอย่างสำหรับ users)
-    const where: any = {
+    // --- page / pageSize: กันค่าผิด และ clamp ---
+    const rawPage = Number(searchParams.get('page') ?? '1')
+    const rawPageSize = Number(searchParams.get('pageSize') ?? '10')
+
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1
+    const pageSizeUnclamped =
+      Number.isFinite(rawPageSize) && rawPageSize > 0 ? Math.floor(rawPageSize) : 10
+    const pageSize = Math.min(100, Math.max(1, pageSizeUnclamped)) // 1..100
+
+    const keyword = (searchParams.get('keyword') ?? '').trim()
+
+    // --- sortBy/sortOrder: กันค่า ---
+    const sortByParam = (searchParams.get('sortBy') ?? 'createdAt') as keyof Prisma.UserOrderByWithRelationInput
+    const sortBy = USER_SORT_WHITELIST.includes(sortByParam) ? sortByParam : 'createdAt'
+    const sortOrder: Prisma.SortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
+
+    // --- isDeleted: รองรับ tri-state (ไม่ระบุ/true/false) ---
+    const isDeletedParam = parseBoolParam(searchParams.get('isDeleted'))
+    // ถ้าอยากดีฟอลต์เป็น false (แสดงเฉพาะที่ไม่ถูกลบ) ให้ตั้งแบบนี้:
+    const isDeleted = isDeletedParam ?? false
+
+    // --- where ---
+    const where: Prisma.UserWhereInput = {
       isDeleted,
+      ...(keyword
+        ? {
+            OR: [
+              { username: { contains: keyword, mode: 'insensitive' } },
+              { email: { contains: keyword, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
     }
 
-    // ✅ นับทั้งหมด
+    // --- count + คำนวณหน้าแบบปลอดภัย ---
     const totalItems = await prisma.user.count({ where })
-    const totalPages = Math.ceil(totalItems / pageSize)
-    const safePage = Math.min(page, totalPages)
-    // ✅ ดึงข้อมูลตามหน้า
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize)) // อย่างน้อย 1
+    const safePage = Math.min(Math.max(page, 1), totalPages) // clamp 1..totalPages
+    const skip = (safePage - 1) * pageSize // ไม่มีทางติดลบ
+
+    // --- query ---
     const users = await prisma.user.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (safePage - 1) * pageSize,
+      skip,
       take: pageSize,
     })
 
-    // ✅ สร้าง response แบบ PaginationResponse
     const response: PaginationResponse = {
-      page,
+      page: safePage,            // ส่งหน้าที่ระบบใช้จริงกลับไป
       pageSize,
-      currentPage: page,
+      currentPage: safePage,
       keyword,
-      sortBy,
+      sortBy: String(sortBy),
       sortOrder,
       totalItems,
       totalPages,
