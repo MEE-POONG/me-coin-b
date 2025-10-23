@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     const [admins, total] = await Promise.all([
       prisma.adminUser.findMany({
-        // where,
+        where,
         skip,
         take: pageSize,
         orderBy: { createdAt: 'asc' as const }
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, username, password, name, phone, accountNumber } = body
+    const { email, username, password, name, phone, accountNumber, accountType, accountName } = body
 
     // Validate required fields
     if (!email || !username || !password || !accountNumber) {
@@ -124,7 +124,9 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         name: name || null,
         phone: phone || null,
-        accountNumber
+        accountNumber,
+        accountType: accountType || null,
+        accountName: accountName || null
       },
       select: {
         id: true,

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ค้นหาผู้ใช้
-    const user = await prisma.user.findUnique({
+    const user = await prisma.adminUser.findUnique({
       where: { id: userId },
       select: {
         id: true,

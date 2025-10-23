@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: errorMessage }, { status: 400 })
     }
 
-    // ตรวจสอบว่า user มีอยู่จริง
-    const user = await prisma.user.findUnique({
+    // ตรวจสอบว่า admin มีอยู่จริง
+    const admin = await prisma.adminUser.findUnique({
       where: { id: resetToken.userId },
       select: {
         id: true,
@@ -79,16 +79,16 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    if (!user) {
-      return NextResponse.json({ error: 'ไม่พบผู้ใช้นี้ในระบบ' }, { status: 404 })
+    if (!admin) {
+      return NextResponse.json({ error: 'ไม่พบแอดมินนี้ในระบบ' }, { status: 404 })
     }
 
     // Hash รหัสผ่านใหม่
     const hashedPassword = await bcrypt.hash(newPassword, 10)
 
     // อัปเดตรหัสผ่าน
-    await prisma.user.update({
-      where: { id: user.id },
+    await prisma.adminUser.update({
+      where: { id: admin.id },
       data: {
         password: hashedPassword,
       },
@@ -105,8 +105,8 @@ export async function POST(request: NextRequest) {
     // บันทึก activity log
     const { ip, userAgent } = getClientInfo(request)
     await ActivityLogger.userUpdated(
-      user.id,
-      user.id,
+      admin.id,
+      admin.id,
       { password: '***' },
       { password: '***' },
       ip,

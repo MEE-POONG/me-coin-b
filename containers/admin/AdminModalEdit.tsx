@@ -1,0 +1,299 @@
+import React, { useEffect, useState } from 'react';
+import axios from '@/lib/axios';
+import ReactIconComponent from '@/components/ReactIconComponent';
+import Modal from '@/components/form/Modal';
+
+interface AdminUser {
+  id: string;
+  discordId?: string | null;
+  email: string;
+  username: string;
+  name?: string | null;
+  phone?: string | null;
+  accountType?: string | null;
+  accountNumber: string;
+  accountName?: string | null;
+  avatar?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+interface AdminModalEditProps {
+  data: AdminUser;
+  onUpdated?: () => void;
+  triggerClassName?: string;
+  triggerText?: string;
+}
+
+const AdminModalEdit: React.FC<AdminModalEditProps> = ({
+  data,
+  onUpdated,
+  triggerClassName,
+  triggerText = 'แก้ไขข้อมูล',
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    name: '',
+    phone: '',
+    accountNumber: '',
+    accountType: '',
+    accountName: '',
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setForm({
+      username: data?.username ?? '',
+      email: data?.email ?? '',
+      password: '',
+      name: data?.name ?? '',
+      phone: data?.phone ?? '',
+      accountNumber: data?.accountNumber ?? '',
+      accountType: data?.accountType ?? '',
+      accountName: data?.accountName ?? '',
+    });
+  }, [isOpen, data]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validate = () => {
+    if (!form.username.trim()) return 'กรุณากรอกชื่อผู้ใช้';
+    if (form.username.trim().length < 3) return 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร';
+    if (!form.email.trim()) return 'กรุณากรอกอีเมล';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'รูปแบบอีเมลไม่ถูกต้อง';
+    if (!form.accountNumber.trim()) return 'กรุณากรอกเลขบัญชี';
+    if (form.password && form.password.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+    return '';
+  };
+
+  const handleSubmit = async () => {
+    const err = validate();
+    if (err) {
+      alert(err);
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const payload: any = {
+        username: form.username.trim(),
+        email: form.email.trim(),
+        name: form.name.trim() || undefined,
+        phone: form.phone.trim() || undefined,
+        accountNumber: form.accountNumber.trim(),
+        accountType: form.accountType.trim() || undefined,
+        accountName: form.accountName.trim() || undefined,
+      };
+
+      if (form.password.trim()) {
+        payload.password = form.password;
+      }
+
+      const res = await axios.put(`/api/admin/${data.id}`, payload);
+
+      if (res.data?.success) {
+        alert('บันทึกข้อมูลสำเร็จ');
+        setIsOpen(false);
+        onUpdated?.();
+      }
+    } catch (e: any) {
+      alert(e?.response?.data?.error || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className={
+          triggerClassName ??
+          'px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600'
+        }
+      >
+        <ReactIconComponent icon="FaEdit" setClass="w-4 h-4" />
+      </button>
+
+      <Modal open={isOpen} onOpenChange={setIsOpen} size="md" closeOnOverlayClick closeOnEsc>
+        <Modal.Header>
+          <div>
+            <Modal.Title>แก้ไขข้อมูลแอดมิน</Modal.Title>
+            <div className="text-xs text-gray-500 mt-1">
+              ID: <span className="font-medium">{data.id}</span>
+            </div>
+          </div>
+          <Modal.Close onClick={() => setIsOpen(false)} disabled={submitting}>
+            <ReactIconComponent icon="FaTimes" setClass="w-5 h-5" />
+          </Modal.Close>
+        </Modal.Header>
+
+        <Modal.Body>
+          <div className="space-y-5">
+            {/* ชื่อผู้ใช้ */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                ชื่อผู้ใช้ <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="กรอกชื่อผู้ใช้"
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+
+            {/* อีเมล */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                อีเมล <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="example@email.com"
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+
+            {/* รหัสผ่านใหม่ */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                รหัสผ่านใหม่
+              </label>
+              <input
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="ไม่ต้องกรอกหากไม่ต้องการเปลี่ยน (อย่างน้อย 8 ตัวอักษร)"
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                หากต้องการเปลี่ยนรหัสผ่าน กรอกรหัสผ่านใหม่ที่นี่
+              </p>
+            </div>
+
+            {/* ชื่อ-นามสกุล */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                ชื่อ-นามสกุล
+              </label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="กรอกชื่อ-นามสกุล (ไม่บังคับ)"
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+
+            {/* เบอร์โทร */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                เบอร์โทร
+              </label>
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="กรอกเบอร์โทร (ไม่บังคับ)"
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+
+            {/* เลขบัญชี */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                เลขบัญชี <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="accountNumber"
+                value={form.accountNumber}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="กรอกเลขบัญชี"
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+
+            {/* ประเภทบัญชี */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                ประเภทบัญชี
+              </label>
+              <select
+                name="accountType"
+                value={form.accountType}
+                onChange={handleChange}
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+              >
+                <option value="">-- เลือกประเภทบัญชี --</option>
+                <option value="bank">ธนาคาร</option>
+                <option value="mobile_money">กระเป๋าเงินมือถือ</option>
+                <option value="crypto">Crypto Wallet</option>
+              </select>
+            </div>
+
+            {/* ชื่อบัญชี */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                ชื่อบัญชี
+              </label>
+              <input
+                name="accountName"
+                value={form.accountName}
+                onChange={handleChange}
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="กรอกชื่อบัญชี (ไม่บังคับ)"
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <div className="flex gap-3 w-full">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="flex-1 px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 shadow-md hover:shadow-lg"
+            >
+              {submitting ? 'กำลังบันทึก...' : 'บันทึก'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              disabled={submitting}
+              className="flex-1 px-6 py-3 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+};
+
+export default AdminModalEdit;

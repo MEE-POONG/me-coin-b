@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 type Step = 'search' | 'selectAccount' | 'sent';
@@ -23,12 +23,13 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/users?search=${identifier}`, {
+      const res = await fetch(`/api/admin/search-accout?search=${identifier}`, {
         method: 'GET',
       });
       const data = await res.json();
-      setFoundUser(data.user as FoundUser);
-      if (data.user) {
+
+      setFoundUser(data?.data as FoundUser);
+      if (data?.data) {
         setStep('selectAccount');
       } else {
         setError('ไม่พบบัญชีที่ตรงกัน');
@@ -70,6 +71,9 @@ export default function ForgotPasswordPage() {
     setIdentifier('');
     setError('');
   };
+  useEffect(() => {
+    console.log(`foundUser : `, foundUser);
+  }, [foundUser]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center px-4">
@@ -138,7 +142,7 @@ export default function ForgotPasswordPage() {
               <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-lg">
                 <p className="font-semibold">✅ พบบัญชีของคุณ</p>
                 <p className="text-sm mt-1">Username: {foundUser.username}</p>
-                <p className="text-sm">Email: {foundUser.maskedEmail}</p>
+                <p className="text-sm">Email: {foundUser.email}</p>
               </div>
 
               <div className="space-y-3">
