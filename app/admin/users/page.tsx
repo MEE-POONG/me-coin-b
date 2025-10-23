@@ -1,24 +1,16 @@
 'use client'
 
 import PaginationSelect from '@/components/PaginationSelect'
-import { PaginationResponse } from '@/types'
-import { User } from '@prisma/client'
+import { PaginationResponse, UserJoined } from '@/types'
 import { useEffect, useMemo, useState } from 'react'
+import UserModalAdd from '@/containers/user/UserModalAdd'
+import UserModalView from '@/containers/user/UserModalView'
+import UserModalEdit from '@/containers/user/UserModalEdit'
+import UserModalDelete from '@/containers/user/UserModalDelete'
 
-
-
-interface UsersResponse {
-  users: User[]
-  pagination: {
-    totalItems: number
-    totalPages: number
-    currentPage: number
-    pageSize: number
-  }
-}
 
 export default function UsersPage() {
-  const [dataList, setDataList] = useState<User[] | null>(null)
+  const [dataList, setDataList] = useState<UserJoined[] | null>(null)
   const [pagination, setPagination] = useState<PaginationResponse>({
     page: 1,
     pageSize: 10,
@@ -32,105 +24,108 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(false);
 
   // ใช้เฉพาะ "พารามิเตอร์ที่มีผลต่อการยิง API" ทำเป็นลายเซ็น
-const querySig = useMemo(
-  () =>
-    JSON.stringify({
-      page: pagination.page,
-      pageSize: pagination.pageSize,
-      keyword: pagination.keyword,
-      typeKeyword: pagination.typeKeyword ?? '',
-      status: pagination.status ?? '',
-      sortBy: pagination.sortBy ?? '',
-      sortOrder: pagination.sortOrder ?? '',
-      search: pagination.search ?? '',
-      typeSearch: pagination.typeSearch ?? '',
-      isActive: pagination.isActive ?? null,
-      isDeleted: pagination.isDeleted ?? null,
-    }),
-  [
-    pagination.page,
-    pagination.pageSize,
-    pagination.keyword,
-    pagination.typeKeyword,
-    pagination.status,
-    pagination.sortBy,
-    pagination.sortOrder,
-    pagination.search,
-    pagination.typeSearch,
-    pagination.isActive,
-    pagination.isDeleted,
-  ]
-);
+  const querySig = useMemo(
+    () =>
+      JSON.stringify({
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        keyword: pagination.keyword,
+        typeKeyword: pagination.typeKeyword ?? '',
+        status: pagination.status ?? '',
+        sortBy: pagination.sortBy ?? '',
+        sortOrder: pagination.sortOrder ?? '',
+        search: pagination.search ?? '',
+        typeSearch: pagination.typeSearch ?? '',
+        isActive: pagination.isActive ?? null,
+        isDeleted: pagination.isDeleted ?? null,
+      }),
+    [
+      pagination.page,
+      pagination.pageSize,
+      pagination.keyword,
+      pagination.typeKeyword,
+      pagination.status,
+      pagination.sortBy,
+      pagination.sortOrder,
+      pagination.search,
+      pagination.typeSearch,
+      pagination.isActive,
+      pagination.isDeleted,
+    ]
+  );
 
-// เทียบเฉพาะคีย์ที่ทำให้ "ต้องยิง API ใหม่"
-const isSameQuery = (a: Partial<PaginationResponse>, b: Partial<PaginationResponse>) => {
-  const keys: (keyof PaginationResponse)[] = [
-    'page','pageSize','keyword','typeKeyword','status',
-    'sortBy','sortOrder','search','typeSearch','isActive','isDeleted'
-  ];
-  return keys.every((k) => (a[k] ?? null) === (b[k] ?? null));
-};
+  // เทียบเฉพาะคีย์ที่ทำให้ "ต้องยิง API ใหม่"
+  const isSameQuery = (a: Partial<PaginationResponse>, b: Partial<PaginationResponse>) => {
+    const keys: (keyof PaginationResponse)[] = [
+      'page', 'pageSize', 'keyword', 'typeKeyword', 'status',
+      'sortBy', 'sortOrder', 'search', 'typeSearch', 'isActive', 'isDeleted'
+    ];
+    return keys.every((k) => (a[k] ?? null) === (b[k] ?? null));
+  };
 
 
-const fetchUsers = async (signal?: AbortSignal) => {
-  setLoading(true);
-  try {
-    const p = JSON.parse(querySig); // ใช้ค่าจาก signature ให้คงที่ในรอบนี้
-    const qs = new URLSearchParams({
-      page: String(p.page),
-      pageSize: String(p.pageSize),
-      keyword: p.keyword || '',
-      typeKeyword: p.typeKeyword || '',
-      status: p.status || '',
-      sortBy: p.sortBy || '',
-      sortOrder: p.sortOrder || '',
-      search: p.search || '',
-      typeSearch: p.typeSearch || '',
-      ...(p.isActive !== null && p.isActive !== undefined ? { isActive: String(p.isActive) } : {}),
-      ...(p.isDeleted !== null && p.isDeleted !== undefined ? { isDeleted: String(p.isDeleted) } : {}),
-    }).toString();
+  const fetchUsers = async (signal?: AbortSignal) => {
+    setLoading(true);
+    try {
+      const p = JSON.parse(querySig); // ใช้ค่าจาก signature ให้คงที่ในรอบนี้
+      const qs = new URLSearchParams({
+        page: String(p.page),
+        pageSize: String(p.pageSize),
+        keyword: p.keyword || '',
+        typeKeyword: p.typeKeyword || '',
+        status: p.status || '',
+        sortBy: p.sortBy || '',
+        sortOrder: p.sortOrder || '',
+        search: p.search || '',
+        typeSearch: p.typeSearch || '',
+        ...(p.isActive !== null && p.isActive !== undefined ? { isActive: String(p.isActive) } : {}),
+        ...(p.isDeleted !== null && p.isDeleted !== undefined ? { isDeleted: String(p.isDeleted) } : {}),
+      }).toString();
 
-    const res = await fetch(`/api/users?${qs}`, { signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+      const res = await fetch(`/api/users?${qs}`, { signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
 
-    setDataList(data.data ?? []);
+      setDataList(data.data ?? []);
 
-    // อัปเดต pagination เฉพาะเมื่อ "พารามิเตอร์ยิง API" เปลี่ยนจริง
-    setPagination((prev) => {
-      const next: PaginationResponse = { ...prev, ...data.pagination };
-      // ถ้าพารามิเตอร์คงเดิม ไม่ต้อง set (กันลูป/เรนเดอร์ซ้ำ)
-      if (isSameQuery(prev, next)) {
-        // แต่ยังคงรับค่าพวก totalItems/totalPages/currentPage ที่ server ส่งมา
-        const metaKeys: (keyof PaginationResponse)[] = ['totalItems','totalPages','currentPage'];
-        let changed = false;
-        const merged = { ...prev };
-        metaKeys.forEach((k) => {
-          if ((prev[k] ?? null) !== (next[k] ?? null)) {
-            // @ts-ignore
-            merged[k] = next[k];
-            changed = true;
-          }
-        });
-        return changed ? merged : prev;
+      // อัปเดต pagination เฉพาะเมื่อ "พารามิเตอร์ยิง API" เปลี่ยนจริง
+      setPagination((prev) => {
+        const next: PaginationResponse = { ...prev, ...data.pagination };
+        // ถ้าพารามิเตอร์คงเดิม ไม่ต้อง set (กันลูป/เรนเดอร์ซ้ำ)
+        if (isSameQuery(prev, next)) {
+          // แต่ยังคงรับค่าพวก totalItems/totalPages/currentPage ที่ server ส่งมา
+          const metaKeys: (keyof PaginationResponse)[] = ['totalItems', 'totalPages', 'currentPage'];
+          let changed = false;
+          const merged = { ...prev };
+          metaKeys.forEach((k) => {
+            if ((prev[k] ?? null) !== (next[k] ?? null)) {
+              // @ts-ignore
+              merged[k] = next[k];
+              changed = true;
+            }
+          });
+          return changed ? merged : prev;
+        }
+        return next;
+      });
+    } catch (e) {
+      if ((e as any)?.name !== 'AbortError') {
+        console.error('Error fetching users:', e);
       }
-      return next;
-    });
-  } catch (e) {
-    if ((e as any)?.name !== 'AbortError') {
-      console.error('Error fetching users:', e);
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-useEffect(() => {
-  const controller = new AbortController();
-  fetchUsers(controller.signal);
-  return () => controller.abort();
-  // ผูกกับ querySig เท่านั้น กันลูปจากการเปลี่ยน object reference
-}, [querySig]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchUsers(controller.signal);
+    return () => controller.abort();
+    // ผูกกับ querySig เท่านั้น กันลูปจากการเปลี่ยน object reference
+  }, [querySig]);
+  useEffect(() => {
+    console.log(dataList);
+  }, [dataList]);
 
   if (loading && !dataList) {
     return (
@@ -142,8 +137,10 @@ useEffect(() => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">จัดการผู้ใช้</h1>
-
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">จัดการผู้ใช้</h1>
+        <UserModalAdd onCreated={() => fetchUsers()} />
+      </div>
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -163,6 +160,9 @@ useEffect(() => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   วันที่สมัคร
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  จัดการ
                 </th>
               </tr>
             </thead>
@@ -199,7 +199,7 @@ useEffect(() => {
 
                   {/* ยอดเงินในบัญชี */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                    {(user?.accountNumber ?? 0).toLocaleString()} บาท
+                    {(user?.wallet?.balance ?? 0).toLocaleString()} บาท
                   </td>
 
                   {/* วันที่สร้างบัญชี */}
@@ -211,6 +211,13 @@ useEffect(() => {
                         day: 'numeric',
                       })
                       : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex justify-end gap-2">
+                      <UserModalView data={user} />
+                      <UserModalEdit data={user} onUpdated={() => fetchUsers()} />
+                      <UserModalDelete data={user} onDeleted={() => fetchUsers()} />
+                    </div>
                   </td>
                 </tr>
               ))}

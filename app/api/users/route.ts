@@ -68,11 +68,11 @@ export async function GET(req: Request) {
       isDeleted,
       ...(keyword
         ? {
-            OR: [
-              { username: { contains: keyword, mode: 'insensitive' } },
-              { email: { contains: keyword, mode: 'insensitive' } },
-            ],
-          }
+          OR: [
+            { username: { contains: keyword, mode: 'insensitive' } },
+            { email: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }
         : {}),
     }
 
@@ -88,6 +88,9 @@ export async function GET(req: Request) {
       orderBy: { [sortBy]: sortOrder },
       skip,
       take: pageSize,
+      include: {
+        wallet: true,
+      },
     })
 
     const response: PaginationResponse = {
@@ -138,7 +141,8 @@ export async function POST(req: Request) {
         username,
         accountNumber,
         avatar: avatar ?? undefined,
-        role: role === 'ADMIN' ? 'ADMIN' : 'NORMAL',
+        role: 'NORMAL',
+
       },
       select: baseUserSelect,
     })

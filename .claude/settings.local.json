@@ -9,7 +9,15 @@
       "Bash(Where-Object {$_rocessName -eq \"node\"})",
       "Bash(Select-Object Id, ProcessName, StartTime)",
       "Bash(node -e \"console.log(require(''crypto'').randomBytes(32).toString(''hex''))\")",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(if [ -d \"containers/user\" ])",
+      "Bash(then echo \"Directory exists\")",
+      "Bash(else mkdir -p containers/user)",
+      "Bash(fi)",
+      "Bash(if [ -d \"components/form\" ])",
+      "Bash(then echo \"exists\")",
+      "Bash(else mkdir -p components/form)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
