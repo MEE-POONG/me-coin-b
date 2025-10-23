@@ -65,7 +65,9 @@ model User {
   username          String         @unique
   name              String?
   phone             String?
+  accountType       String? //bank, mobile_money, etc.
   accountNumber     String         @unique
+  accountName       String? //ชื่อบัญชี
   avatar            String         @default("https://via.placeholder.com/150")
   role              UserRole       @default(NORMAL)
   wallet            Wallet?
@@ -88,18 +90,19 @@ model User {
 }
 
 model AdminUser {
-  id                String         @id @default(auto()) @map("_id") @db.ObjectId
-  discordId         String?
-  email             String         @unique
-  password          String
-  username          String         @unique
-  name              String?
-  phone             String?
-  accountNumber     String         @unique
-  avatar            String         @default("https://via.placeholder.com/150")
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  discordId     String?
+  email         String   @unique
+  password      String
+  username      String   @unique
+  name          String?
+  phone         String?
+  accountType   String? //bank, mobile_money, etc.
+  accountNumber String   @unique
+  accountName   String? //ชื่อบัญชี
+  avatar        String   @default("https://via.placeholder.com/150")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model PasswordResetToken {

@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs'
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -31,29 +31,18 @@ export async function GET(request: NextRequest) {
 
     const where = search ? {
       OR: [
-        { username: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { name: { contains: search, mode: 'insensitive' } }
+        { username: { contains: search, mode: 'insensitive' as const } },
+        { email: { contains: search, mode: 'insensitive' as const } },
+        { name: { contains: search, mode: 'insensitive' as const } }
       ]
     } : {}
 
     const [admins, total] = await Promise.all([
       prisma.adminUser.findMany({
-        where,
-        select: {
-          id: true,
-          email: true,
-          username: true,
-          name: true,
-          phone: true,
-          accountNumber: true,
-          avatar: true,
-          createdAt: true,
-          updatedAt: true
-        },
+        // where,
         skip,
         take: pageSize,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'asc' as const }
       }),
       prisma.adminUser.count({ where })
     ])
@@ -81,7 +70,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
