@@ -70,6 +70,11 @@ model User {
   accountName       String? //ชื่อบัญชี
   avatar            String         @default("https://via.placeholder.com/150")
   role              UserRole       @default(NORMAL)
+  isBlocked         Boolean        @default(false)
+  blockedReason     String?
+  blockedAt         DateTime?
+  blockedUntil      DateTime?
+  blockedBy         String?        @db.ObjectId
   wallet            Wallet?
   deposits          Deposit[]
   withdrawals       Withdrawal[]
@@ -281,6 +286,8 @@ enum ActivityAction {
   LOGOUT
   APPROVE
   REJECT
+  BLOCK
+  UNBLOCK
 }
 
 model ActivityLog {

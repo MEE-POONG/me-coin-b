@@ -176,6 +176,38 @@ const UserModalView: React.FC<UserModalViewProps> = ({
               </div>
             </div>
 
+            {/* สถานะการบล็อก */}
+            {data.isBlocked && (
+              <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-red-800 mb-4 flex items-center gap-2">
+                  <ReactIconComponent icon="FaBan" setClass="w-5 h-5 text-red-600" />
+                  ผู้ใช้ถูกบล็อก
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">บล็อกเมื่อ</label>
+                    <p className="text-base text-gray-900 mt-1">
+                      {formatDate(data.blockedAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">หมดเวลา</label>
+                    <p className="text-base font-bold text-red-600 mt-1">
+                      {formatDate(data.blockedUntil)}
+                    </p>
+                  </div>
+                  {data.blockedReason && (
+                    <div className="col-span-2">
+                      <label className="text-sm font-medium text-gray-600">เหตุผล</label>
+                      <p className="text-base text-gray-900 mt-1 bg-white p-3 rounded border border-red-200">
+                        {data.blockedReason}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* ข้อมูลระบบ */}
             <div className="bg-gray-50 rounded-lg p-5">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">ข้อมูลระบบ</h3>
@@ -195,8 +227,8 @@ const UserModalView: React.FC<UserModalViewProps> = ({
                 <div>
                   <label className="text-sm font-medium text-gray-600">สถานะบัญชี</label>
                   <p className="mt-1">
-                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${data.isDeleted ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                      {data.isDeleted ? 'ถูกลบ' : 'ใช้งาน'}
+                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${data.isBlocked ? 'bg-red-100 text-red-800' : data.isDeleted ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'}`}>
+                      {data.isBlocked ? 'ถูกบล็อก' : data.isDeleted ? 'ถูกลบ' : 'ใช้งาน'}
                     </span>
                   </p>
                 </div>
