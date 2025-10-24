@@ -10,7 +10,7 @@ export default function NotFound() {
           ขอโทษครับ หน้าที่คุณกำลังมองหาอาจถูกย้าย หรือไม่มีอยู่ในระบบ
         </p>
         <Link
-          href="/"
+          href="/admin"
           className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-8 rounded-lg transition"
         >
           กลับหน้าหลัก

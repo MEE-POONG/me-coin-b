@@ -98,3 +98,13 @@ export const userJoinedInclude = {
   activityLogs: true,
   loginHistory: true,
 } satisfies Prisma.UserInclude
+
+export interface TransactionJoined extends Transaction {
+  user: UserJoined | null
+  wallet: Wallet | null
+  deposit: Deposit | null
+  withdrawal: Withdrawal | null
+  purchase: PurchaseWithItem | null
+  gift: GiftOutgoing | null
+  transfer: TransferIncoming | null
+}

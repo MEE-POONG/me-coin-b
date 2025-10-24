@@ -9,10 +9,11 @@ import UserModalEdit from '@/containers/user/UserModalEdit'
 import UserModalDelete from '@/containers/user/UserModalDelete'
 import UserModalBlock from '@/containers/user/UserModalBlock'
 import UserModalUnblock from '@/containers/user/UserModalUnblock'
+import { Transaction } from '@prisma/client'
 
 
-export default function UsersPage() {
-  const [dataList, setDataList] = useState<UserJoined[] | null>(null)
+export default function TransactionsPage() {
+  const [dataList, setDataList] = useState<Transaction[] | null>(null)
   const [pagination, setPagination] = useState<PaginationResponse>({
     page: 1,
     pageSize: 10,
@@ -84,7 +85,7 @@ export default function UsersPage() {
         ...(p.isDeleted !== null && p.isDeleted !== undefined ? { isDeleted: String(p.isDeleted) } : {}),
       }).toString();
 
-      const res = await fetch(`/api/users?${qs}`, { signal });
+      const res = await fetch(`/api/transactions?${qs}`, { signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -141,8 +142,8 @@ export default function UsersPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">จัดการผู้ใช้</h1>
-        <UserModalAdd onCreated={() => fetchUsers()} />
+        <h1 className="text-3xl font-bold text-gray-800">จัดการธุรกรรม</h1>
+        {/* <UserModalAdd onCreated={() => fetchUsers()} /> */}
       </div>
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
@@ -173,19 +174,15 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {dataList?.map((user) => (
+              {/* {dataList?.map((user) => (
                 <tr key={user?.id} className="hover:bg-gray-50">
-                  {/* ชื่อผู้ใช้ */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {user?.username || '-'}
                   </td>
 
-                  {/* อีเมล */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user?.email || '—'}
                   </td>
-
-                  {/* บทบาท */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user?.role === 'ADMIN'
@@ -202,8 +199,6 @@ export default function UsersPage() {
                           : 'ผู้ใช้ทั่วไป'}
                     </span>
                   </td>
-
-                  {/* สถานะ */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     {user?.isBlocked ? (
                       <div className="flex flex-col">
@@ -222,13 +217,9 @@ export default function UsersPage() {
                       </span>
                     )}
                   </td>
-
-                  {/* ยอดเงินในบัญชี */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
                     {(user?.wallet?.balance ?? 0).toLocaleString()} บาท
                   </td>
-
-                  {/* วันที่สร้างบัญชี */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user?.createdAt
                       ? new Date(user?.createdAt).toLocaleDateString('th-TH', {
@@ -251,7 +242,7 @@ export default function UsersPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              ))} */}
             </tbody>
 
           </table>

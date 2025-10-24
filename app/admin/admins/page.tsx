@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { FaSearch, FaEnvelope, FaPhone, FaIdCard } from 'react-icons/fa'
 import AdminModalAdd from '@/containers/admin/AdminModalAdd'
 import AdminModalView from '@/containers/admin/AdminModalView'
@@ -37,7 +37,7 @@ export default function AdminsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -57,11 +57,11 @@ export default function AdminsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [pagination.currentPage, pagination.pageSize, search])
 
   useEffect(() => {
     fetchAdmins()
-  }, [pagination.currentPage, search])
+  }, [fetchAdmins])
 
   return (
     <div>
