@@ -73,6 +73,30 @@ export const authOptions: NextAuthOptions = {
 
           console.log('✅ [NextAuth] User found:', { email: user.email, role: user.role })
 
+          // ตรวจสอบว่า user ถูก block หรือไม่
+          if (user.isBlocked) {
+            // ตรวจสอบว่าหมดเวลา block แล้วหรือยัง
+            if (user.blockedUntil && new Date() >= new Date(user.blockedUntil)) {
+              // หมดเวลา block แล้ว ปลดบล็อกอัตโนมัติ
+              await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                  isBlocked: false,
+                  blockedReason: null,
+                  blockedAt: null,
+                  blockedUntil: null,
+                  blockedBy: null,
+                },
+              })
+              console.log('✅ [NextAuth] User auto-unblocked (block period expired):', user.email)
+            } else {
+              // ยังอยู่ในช่วงเวลา block
+              const blockedUntilDate = user.blockedUntil ? new Date(user.blockedUntil).toLocaleDateString('th-TH') : 'ไม่ระบุ'
+              console.log('❌ [NextAuth] User is blocked:', user.email)
+              throw new Error(`บัญชีของคุณถูกระงับการใช้งานจนถึง ${blockedUntilDate}\nเหตุผล: ${user.blockedReason || 'ไม่ระบุ'}`)
+            }
+          }
+
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password

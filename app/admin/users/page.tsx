@@ -7,6 +7,8 @@ import UserModalAdd from '@/containers/user/UserModalAdd'
 import UserModalView from '@/containers/user/UserModalView'
 import UserModalEdit from '@/containers/user/UserModalEdit'
 import UserModalDelete from '@/containers/user/UserModalDelete'
+import UserModalBlock from '@/containers/user/UserModalBlock'
+import UserModalUnblock from '@/containers/user/UserModalUnblock'
 
 
 export default function UsersPage() {
@@ -155,6 +157,9 @@ export default function UsersPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   สิทธิ์
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  สถานะ
+                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ยอดเครดิต
                 </th>
@@ -197,6 +202,26 @@ export default function UsersPage() {
                     </span>
                   </td>
 
+                  {/* สถานะ */}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user?.isBlocked ? (
+                      <div className="flex flex-col">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                          ถูกบล็อก
+                        </span>
+                        {user?.blockedUntil && (
+                          <span className="text-xs text-gray-500 mt-1">
+                            ถึง {new Date(user.blockedUntil).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        ปกติ
+                      </span>
+                    )}
+                  </td>
+
                   {/* ยอดเงินในบัญชี */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
                     {(user?.wallet?.balance ?? 0).toLocaleString()} บาท
@@ -216,6 +241,11 @@ export default function UsersPage() {
                     <div className="flex justify-end gap-2">
                       <UserModalView data={user} />
                       <UserModalEdit data={user} onUpdated={() => fetchUsers()} />
+                      {user?.isBlocked ? (
+                        <UserModalUnblock data={user} onSuccess={() => fetchUsers()} />
+                      ) : (
+                        <UserModalBlock data={user} onSuccess={() => fetchUsers()} />
+                      )}
                       <UserModalDelete data={user} onDeleted={() => fetchUsers()} />
                     </div>
                   </td>
