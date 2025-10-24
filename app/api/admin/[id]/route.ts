@@ -79,7 +79,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { email, username, password, name, phone, accountNumber } = body
+    const { email, username, password, name, phone, accountNumber, accountType, accountName } = body
 
     // Check if admin exists
     const existingAdmin = await prisma.adminUser.findUnique({
@@ -122,6 +122,8 @@ export async function PUT(
     if (name !== undefined) updateData.name = name
     if (phone !== undefined) updateData.phone = phone
     if (accountNumber) updateData.accountNumber = accountNumber
+    if (accountType !== undefined) updateData.accountType = accountType
+    if (accountName !== undefined) updateData.accountName = accountName
     if (password) {
       updateData.password = await bcrypt.hash(password, 12)
     }

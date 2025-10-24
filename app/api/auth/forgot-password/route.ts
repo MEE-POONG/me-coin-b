@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'กรุณากรอกข้อมูล' }, { status: 400 })
     }
 
-    // ค้นหา user จาก email, username หรือ discordId
-    const user = await prisma.user.findFirst({
+    // ค้นหา admin จาก email, username หรือ discordId
+    const admin = await prisma.adminUser.findFirst({
       where: {
         OR: [
           { email: identifier },
@@ -31,40 +31,40 @@ export async function POST(request: NextRequest) {
 
     // ไม่ควรบอกว่าหาไม่เจอเพื่อความปลอดภัย
     // แต่เพื่อ UX ที่ดีกว่า เราจะบอก
-    if (!user) {
-      return NextResponse.json({ 
-        error: 'ไม่พบผู้ใช้นี้ในระบบ' 
+    if (!admin) {
+      return NextResponse.json({
+        error: 'ไม่พบแอดมินนี้ในระบบ'
       }, { status: 404 })
     }
 
     // สร้าง reset token
     const resetToken = crypto.randomBytes(32).toString('hex')
-    const resetLink = `${process.env.NEXTAUTH_URL}/forgot-password?token=${resetToken}&userId=${user.id}`
+    const resetLink = `${process.env.NEXTAUTH_URL}/forgot-password?token=${resetToken}&userId=${admin.id}`
 
     // ส่ง email (ถ้ามีการตั้งค่า EMAIL)
     if (process.env.GMAIL_USER && process.env.GMAIL_PASSWORD) {
-      const template = EmailTemplates.resetPassword(user.username, resetLink)
+      const template = EmailTemplates.resetPassword(admin.username, resetLink)
       await sendEmail({
-        to: user.email,
+        to: admin.email,
         ...template,
       })
-      console.log('✅ Reset password email sent to:', user.email)
+      console.log('✅ Reset password email sent to:', admin.email)
     }
 
     // TODO: ในระบบจริงควรเก็บ token ใน database
     // แต่เพื่อความง่าย เราจะส่ง userId กลับไปให้ทำงานได้เลย
-    
+
     return NextResponse.json({
       success: true,
-      message: process.env.GMAIL_USER 
+      message: process.env.GMAIL_USER
         ? 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว'
-        : 'พบผู้ใช้ในระบบ',
+        : 'พบแอดมินในระบบ',
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
+        id: admin.id,
+        username: admin.username,
+        email: admin.email,
       },
-      resetToken, 
+      resetToken,
     })
   } catch (error) {
     console.error('Error in forgot password:', error)
