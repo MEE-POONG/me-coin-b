@@ -209,7 +209,7 @@ const AdminModalAdd: React.FC<AdminModalAddProps> = ({
             {/* ประเภทบัญชี */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">
-                ประเภทบัญชี
+                บัญชีธนาคาร
               </label>
               <select
                 name="accountType"
@@ -217,10 +217,30 @@ const AdminModalAdd: React.FC<AdminModalAddProps> = ({
                 onChange={handleChange}
                 className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
               >
-                <option value="">-- เลือกประเภทบัญชี --</option>
-                <option value="bank">ธนาคาร</option>
-                <option value="mobile_money">กระเป๋าเงินมือถือ</option>
+                <option value="" disabled >-- เลือกประเภทบัญชี --</option>
+                <option value="promptpay">PromptPay</option>
                 <option value="crypto">Crypto Wallet</option>
+                <option value="BBL">ธนาคารกรุงเทพ</option>
+                <option value="KBANK">ธนาคารกสิกรไทย</option>
+                <option value="KTB">ธนาคารกรุงไทย</option>
+                <option value="TTB">ธนาคารทหารไทยธนชาต</option>
+                <option value="SCB">ธนาคารไทยพาณิชย์</option>
+                <option value="BAY">ธนาคารกรุงศรีอยุธยา</option>
+                <option value="KKP">ธนาคารเกียรตินาคินภัทร</option>
+                <option value="CIMBT">ธนาคารซีไอเอ็มบีไทย</option>
+                <option value="UOB">ธนาคารยูโอบี</option>
+                <option value="TISCO">ธนาคารทิสโก้</option>
+                <option value="SCBT">ธนาคารสแตนดาร์ดชาร์เตอร์ด (ไทย)</option>
+                <option value="ICBC">ธนาคารไอซีบีซี (ไทย)</option>
+                <option value="LHBANK">ธนาคารแลนด์แอนด์เฮ้าส์ (LH Bank)</option>
+                <option value="TNC">ธนาคารธนชาต (ในอดีต)</option>
+                <option value="SIB">ธนาคารนครหลวงไทย (ในอดีต)</option>
+                <option value="GSB">ธนาคารออมสิน</option>
+                <option value="BAAC">ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (ธ.ก.ส.)</option>
+                <option value="GHBANK">ธนาคารอาคารสงเคราะห์ (ธอส.)</option>
+                <option value="EXIM">ธนาคารเพื่อการส่งออกและนำเข้าแห่งประเทศไทย (ธสน.)</option>
+                <option value="SME">ธนาคารพัฒนาวิสาหกิจขนาดกลางและขนาดย่อมแห่งประเทศไทย (ธพว.)</option>
+                <option value="ISLAMIC">ธนาคารอิสลามแห่งประเทศไทย (ธอท.)</option>
               </select>
             </div>
 

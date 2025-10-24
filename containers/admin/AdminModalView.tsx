@@ -41,19 +41,6 @@ const AdminModalView: React.FC<AdminModalViewProps> = ({
     });
   };
 
-  const getAccountTypeLabel = (type: string | null | undefined) => {
-    switch (type) {
-      case 'bank':
-        return 'ธนาคาร';
-      case 'mobile_money':
-        return 'กระเป๋าเงินมือถือ';
-      case 'crypto':
-        return 'Crypto Wallet';
-      default:
-        return '-';
-    }
-  };
-
   return (
     <>
       <button
@@ -137,7 +124,7 @@ const AdminModalView: React.FC<AdminModalViewProps> = ({
                 <div>
                   <label className="text-sm font-medium text-gray-600">ประเภทบัญชี</label>
                   <p className="text-base font-semibold text-gray-900 mt-1">
-                    {getAccountTypeLabel(data.accountType)}
+                  {data.accountType}
                   </p>
                 </div>
                 <div className="col-span-2">

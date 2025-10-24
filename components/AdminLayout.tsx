@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SessionProvider>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-purple-200">
         <div className="flex">
           {/* Sidebar ใช้ slide-in/out แทนการซ่อน width */}
           <Sidebar items={adminMenuItems} isOpen={isOpen} onToggle={onToggle} />

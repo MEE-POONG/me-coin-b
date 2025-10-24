@@ -46,7 +46,7 @@ export default function AdminDashboardPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">แดชบอร์ดแอดมิน</h1>
         {/* ปุ่มทดสอบ Email อยู่ตรงนี้ */}
-        <EmailTestButton variant="primary" />
+        {/* <EmailTestButton variant="primary" /> */}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

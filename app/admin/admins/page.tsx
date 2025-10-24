@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaUser, FaEnvelope, FaPhone, FaIdCard } from 'react-icons/fa'
+import { FaSearch, FaEnvelope, FaPhone, FaIdCard } from 'react-icons/fa'
+import AdminModalAdd from '@/containers/admin/AdminModalAdd'
+import AdminModalView from '@/containers/admin/AdminModalView'
+import AdminModalEdit from '@/containers/admin/AdminModalEdit'
+import AdminModalDelete from '@/containers/admin/AdminModalDelete'
 
 interface AdminUser {
   id: string
@@ -32,16 +36,6 @@ export default function AdminsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [showModal, setShowModal] = useState(false)
-  const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null)
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    password: '',
-    name: '',
-    phone: '',
-    accountNumber: ''
-  })
 
   const fetchAdmins = async () => {
     setLoading(true)
@@ -51,7 +45,7 @@ export default function AdminsPage() {
         pageSize: pagination.pageSize.toString(),
         ...(search && { search })
       })
-      
+
       const res = await fetch(`/api/admin?${params}`)
       if (res.ok) {
         const data = await res.json()
@@ -69,95 +63,11 @@ export default function AdminsPage() {
     fetchAdmins()
   }, [pagination.currentPage, search])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const url = editingAdmin ? `/api/admin/${editingAdmin.id}` : '/api/admin'
-      const method = editingAdmin ? 'PUT' : 'POST'
-      
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (res.ok) {
-        setShowModal(false)
-        setEditingAdmin(null)
-        setFormData({
-          email: '',
-          username: '',
-          password: '',
-          name: '',
-          phone: '',
-          accountNumber: ''
-        })
-        fetchAdmins()
-      } else {
-        const error = await res.json()
-        alert(error.error || 'เกิดข้อผิดพลาด')
-      }
-    } catch (error) {
-      console.error('Error saving admin:', error)
-      alert('เกิดข้อผิดพลาด')
-    }
-  }
-
-  const handleEdit = (admin: AdminUser) => {
-    setEditingAdmin(admin)
-    setFormData({
-      email: admin.email,
-      username: admin.username,
-      password: '',
-      name: admin.name || '',
-      phone: admin.phone || '',
-      accountNumber: admin.accountNumber
-    })
-    setShowModal(true)
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('คุณแน่ใจหรือไม่ที่จะลบ admin นี้?')) return
-
-    try {
-      const res = await fetch(`/api/admin/${id}`, { method: 'DELETE' })
-      if (res.ok) {
-        fetchAdmins()
-      } else {
-        const error = await res.json()
-        alert(error.error || 'เกิดข้อผิดพลาด')
-      }
-    } catch (error) {
-      console.error('Error deleting admin:', error)
-      alert('เกิดข้อผิดพลาด')
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      email: '',
-      username: '',
-      password: '',
-      name: '',
-      phone: '',
-      accountNumber: ''
-    })
-    setEditingAdmin(null)
-  }
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">จัดการ Admin</h1>
-        <button
-          onClick={() => {
-            resetForm()
-            setShowModal(true)
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
-          <FaPlus /> เพิ่ม Admin
-        </button>
+        <AdminModalAdd onCreated={() => fetchAdmins()} />
       </div>
 
       {/* Search */}
@@ -261,18 +171,9 @@ export default function AdminsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleEdit(admin)}
-                          className="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(admin.id)}
-                          className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded"
-                        >
-                          <FaTrash />
-                        </button>
+                        <AdminModalView data={admin} />
+                        <AdminModalEdit data={admin} onUpdated={() => fetchAdmins()} />
+                        <AdminModalDelete data={admin} onDeleted={() => fetchAdmins()} />
                       </div>
                     </td>
                   </tr>
@@ -307,107 +208,6 @@ export default function AdminsPage() {
           </div>
         )}
       </div>
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingAdmin ? 'แก้ไข Admin' : 'เพิ่ม Admin'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  อีเมล *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ชื่อผู้ใช้ *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  รหัสผ่าน {editingAdmin ? '(เว้นว่างไว้หากไม่ต้องการเปลี่ยน)' : '*'}
-                </label>
-                <input
-                  type="password"
-                  required={!editingAdmin}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ชื่อ-นามสกุล
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  เบอร์โทรศัพท์
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  หมายเลขบัญชี *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.accountNumber}
-                  onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
-                >
-                  {editingAdmin ? 'อัปเดต' : 'สร้าง'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false)
-                    resetForm()
-                  }}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
-                >
-                  ยกเลิก
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
