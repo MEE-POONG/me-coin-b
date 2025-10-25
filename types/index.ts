@@ -1,4 +1,4 @@
-import { Transfer, Gift, Purchase, OwnedItem, Deposit, Transaction, User, Wallet, Withdrawal, ActivityLog, LoginHistory, Item, Prisma } from "@prisma/client";
+import { Transfer, Gift, Purchase, OwnedItem, Deposit, Transaction, User, Wallet, Withdrawal, ActivityLog, LoginHistory, Item, Prisma, AdminUser } from "@prisma/client";
 export interface PaginationResponse {
   page: number;
   pageSize: number;
@@ -74,7 +74,6 @@ export const userJoinedInclude = {
   wallet: true,
   deposits: true,
   withdrawals: true,
-  transactions: true,
   ownedItems: { include: { item: true } },
   purchases: { include: { ownedItem: { include: { item: true } } } },
   sentGifts: {
@@ -99,8 +98,16 @@ export const userJoinedInclude = {
   loginHistory: true,
 } satisfies Prisma.UserInclude
 
-export interface TransactionJoined extends Transaction {
+export interface TransactionJoinedList extends Transaction {
   user: UserJoined | null
+  adminUser: AdminUser | null
+  wallet: Wallet | null
+  deposit: Deposit | null
+}
+
+export interface TransactionJoinedDetail extends Transaction {
+  user: UserJoined | null
+  adminUser: AdminUser | null
   wallet: Wallet | null
   deposit: Deposit | null
   withdrawal: Withdrawal | null

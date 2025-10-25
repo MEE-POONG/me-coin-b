@@ -84,30 +84,31 @@ model User {
   ownedItems        OwnedItem[]
   sentTransfers     Transfer[]     @relation("SentTransfers")
   receivedTransfers Transfer[]     @relation("ReceivedTransfers")
-  transactions      Transaction[]
   activityLogs      ActivityLog[]
   loginHistory      LoginHistory[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   isDeleted         Boolean        @default(false)
+  Transaction       Transaction[]
 
   @@map("users")
 }
 
 model AdminUser {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
   discordId     String?
-  email         String   @unique
+  email         String        @unique
   password      String
-  username      String   @unique
+  username      String        @unique
   name          String?
   phone         String?
   accountType   String? //bank, mobile_money, etc.
-  accountNumber String   @unique
+  accountNumber String        @unique
   accountName   String? //ชื่อบัญชี
-  avatar        String   @default("https://via.placeholder.com/150")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  avatar        String        @default("https://via.placeholder.com/150")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  transactions  Transaction[]
 }
 
 model PasswordResetToken {
@@ -142,6 +143,8 @@ model Transaction {
   slipImage    String?
   userId       String            @db.ObjectId
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId      String?           @db.ObjectId
+  adminUser    AdminUser?        @relation(fields: [adminId], references: [id], onDelete: Cascade)
   walletId     String            @db.ObjectId
   wallet       Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
   depositId    String?           @db.ObjectId
@@ -292,8 +295,8 @@ enum ActivityAction {
 
 model ActivityLog {
   id          String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String?         @db.ObjectId
-  user        User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?        @db.ObjectId
+  user        User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   action      ActivityAction
   model       String // ชื่อ model ที่ถูกกระทำ เช่น "User", "Item", "Transaction"
   modelId     String? // ID ของ record ที่ถูกกระทำ
@@ -309,8 +312,8 @@ model ActivityLog {
 
 model LoginHistory {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String?   @db.ObjectId
-  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?  @db.ObjectId
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   ipAddress  String
   userAgent  String
   success    Boolean  @default(true)

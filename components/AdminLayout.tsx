@@ -7,9 +7,11 @@ import { useState } from 'react'
 // (ถ้าอยากใช้ Link/NavBar ค่อยเพิ่มทีหลัง)
 const adminMenuItems = [
   { href: '/admin', label: 'แดชบอร์ด', icon: '📊' },
+  { href: '/admin/deposit', label: 'จัดการเติมเครดิต', icon: '💰' },
+  { href: '/admin/deposit/history', label: 'ประวัติการเติมเครดิต', icon: '�' },
   { href: '/admin/users', label: 'จัดการผู้ใช้', icon: '👥' },
   { href: '/admin/admins', label: 'จัดการ Admin', icon: '👨‍💼' },
-  { href: '/admin/transactions', label: 'ประวัติทั้งหมด', icon: '📜' },
+  { href: '/admin/transactions', label: 'ประวัติการทำธุรกรรม', icon: '📜' },
   { href: '/admin/test-email', label: 'ทดสอบ Email', icon: '📧' },
 ]
 
@@ -32,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             {/* ปุ่มลอยไว้เรียกเปิด sidebar เมื่อปิดอยู่ (มือถือ/จอเล็ก) */}
             {!isOpen && (
-              <ButtonSidebar onClick={onToggle} className='fixed left-[-10px] top-3 z-30 rounded-lg rounded-l-none bg-white shadow px-3 py-2 pl-0 text-xl'/>
+              <ButtonSidebar onClick={onToggle} className='fixed left-[-10px] top-3 z-30 rounded-lg rounded-l-none bg-white shadow px-3 py-2 pl-0 text-xl' />
             )}
             {children}
           </main>

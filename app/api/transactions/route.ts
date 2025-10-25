@@ -29,63 +29,10 @@ export async function GET(request: NextRequest) {
       prisma.transaction.findMany({
         where,
         include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              email: true,
-              avatar: true,
-            },
-          },
-          wallet: {
-            select: {
-              id: true,
-              balance: true,
-            },
-          },
+          user: true,
+          adminUser: true,
+          wallet: true,
           deposit: true,
-          withdrawal: true,
-          purchase: {
-            include: {
-              ownedItem: {
-                include: {
-                  item: true,
-                },
-              },
-            },
-          },
-          gift: {
-            include: {
-              sender: {
-                select: {
-                  id: true,
-                  username: true,
-                },
-              },
-              recipient: {
-                select: {
-                  id: true,
-                  username: true,
-                },
-              },
-            },
-          },
-          transfer: {
-            include: {
-              sender: {
-                select: {
-                  id: true,
-                  username: true,
-                },
-              },
-              receiver: {
-                select: {
-                  id: true,
-                  username: true,
-                },
-              },
-            },
-          },
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -95,6 +42,7 @@ export async function GET(request: NextRequest) {
     ])
 
     const totalPages = Math.ceil(totalItems / pageSize)
+    console.log(63, `transactions: ${transactions}`);
 
     return NextResponse.json({
       transactions,
