@@ -12,6 +12,7 @@ const adminMenuItems = [
   { href: '/admin/users', label: 'จัดการผู้ใช้', icon: '👥' },
   { href: '/admin/admins', label: 'จัดการ Admin', icon: '👨‍💼' },
   { href: '/admin/transactions', label: 'ประวัติการทำธุรกรรม', icon: '📜' },
+  { href: '/admin/gallery', label: 'กล้องถ่ายรูป', icon: '🎥' },
   { href: '/admin/test-email', label: 'ทดสอบ Email', icon: '📧' },
 ]
 

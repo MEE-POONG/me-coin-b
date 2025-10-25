@@ -3,6 +3,7 @@
 import PaginationSelect from '@/components/PaginationSelect'
 import { PaginationResponse } from '@/types'
 import { useEffect, useMemo, useState } from 'react'
+import DepositModalAdd from '@/containers/deposit/DepositModalAdd'
 
 interface DepositWithUser {
   id: string;
@@ -141,9 +142,10 @@ export default function DepositsPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">จัดการเติมเครดิต</h1>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+        {/* <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
           เพิ่มรายการเติมเครดิต
-        </button>
+        </button> */}
+        <DepositModalAdd />
         {/* <div className="flex gap-2">
           <select
             value={pagination.status || ''}

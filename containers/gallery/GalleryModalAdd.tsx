@@ -3,26 +3,24 @@ import axios from '@/lib/axios';
 import ReactIconComponent from '@/components/ReactIconComponent';
 import Modal from '@/components/form/Modal';
 
-interface DepositModalAddProps {
+interface GalleryModalAddProps {
   onCreated?: () => void;
   triggerClassName?: string;
   triggerText?: string;
 }
 
-const DepositModalAdd: React.FC<DepositModalAddProps> = ({
+const GalleryModalAdd: React.FC<GalleryModalAddProps> = ({
   onCreated,
   triggerClassName,
-  triggerText = 'เพิ่มการเติมเครดิต',
+  triggerText = 'เพิ่มรูปภาพ',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [form, setForm] = useState({
-    userId: '',
-    amount: '',
-    rate: '',
-    slipImage: '',
-    comment: '',
+    nameFile: '',
+    modalName: '',
+    createdBy: '',
   });
 
   const [uploadState, setUploadState] = useState({
@@ -32,7 +30,7 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
     uploadedImageUrl: '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
@@ -65,10 +63,11 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
       uploadedImageUrl: '',
     }));
 
-    // ล้างค่า URL เดิม
-    setForm(prev => ({ ...prev, slipImage: '' }));
+    // ตั้งชื่อไฟล์อัตโนมัติ
+    if (!form.nameFile) {
+      setForm(prev => ({ ...prev, nameFile: file.name }));
+    }
   };
-
 
   const clearFile = () => {
     if (uploadState.previewUrl) {
@@ -80,16 +79,12 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
       previewUrl: '',
       uploadedImageUrl: '',
     });
-    setForm(prev => ({ ...prev, slipImage: '' }));
   };
 
   const validate = () => {
-    if (!form.userId.trim()) return 'กรุณากรอก User ID';
-    if (!form.amount.trim()) return 'กรุณากรอกจำนวนเงิน';
-    if (isNaN(Number(form.amount)) || Number(form.amount) <= 0) return 'จำนวนเงินต้องเป็นตัวเลขที่มากกว่า 0';
-    if (!form.rate.trim()) return 'กรุณากรอกอัตราแลกเปลี่ยน';
-    if (isNaN(Number(form.rate)) || Number(form.rate) <= 0) return 'อัตราแลกเปลี่ยนต้องเป็นตัวเลขที่มากกว่า 0';
-    if (!uploadState.selectedFile && !form.slipImage.trim()) return 'กรุณาเลือกไฟล์สลิปการโอนเงิน';
+    if (!uploadState.selectedFile) return 'กรุณาเลือกไฟล์รูปภาพ';
+    if (!form.nameFile.trim()) return 'กรุณากรอกชื่อไฟล์';
+    if (!form.modalName.trim()) return 'กรุณาเลือกประเภทรูปภาพ';
     return '';
   };
 
@@ -105,17 +100,17 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
     try {
       setSubmitting(true);
 
-      // 1. อัพโหลดรูปก่อน (ถ้ามีไฟล์ใหม่)
+      // 1. อัพโหลดรูปก่อน
       if (uploadState.selectedFile) {
         setUploadState(prev => ({ ...prev, uploading: true }));
 
         const formData = new FormData();
         formData.append('file', uploadState.selectedFile);
-        formData.append('nameFile', uploadState.selectedFile.name);
-        formData.append('modalName', 'deposit');
-        formData.append('createdBy', form.userId.trim());
+        formData.append('nameFile', form.nameFile.trim());
+        formData.append('modalName', form.modalName.trim());
+        formData.append('createdBy', form.createdBy.trim() || 'admin');
 
-        const uploadResponse = await fetch('/api/upload/cloudflare', {
+        const uploadResponse = await fetch('/api/images/upload-and-save', {
           method: 'POST',
           body: formData,
         });
@@ -123,70 +118,38 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
         const uploadResult = await uploadResponse.json();
 
         if (uploadResult.success && uploadResult.data) {
-          uploadedImageUrl = uploadResult.data.url;
+          uploadedImageUrl = uploadResult.data.imageUrl;
           setUploadState(prev => ({ 
             ...prev, 
             uploadedImageUrl,
             uploading: false 
           }));
+
+          alert('เพิ่มรูปภาพสำเร็จ!');
+          setIsOpen(false);
+          
+          // Reset form
+          setForm({
+            nameFile: '',
+            modalName: '',
+            createdBy: '',
+          });
+          clearFile();
+          onCreated?.();
         } else {
           throw new Error(uploadResult.error || 'การอัพโหลดรูปภาพล้มเหลว');
         }
-      } else if (form.slipImage.trim()) {
-        // ใช้ URL ที่มีอยู่แล้ว
-        uploadedImageUrl = form.slipImage.trim();
-      }
-
-      // 2. บันทึกข้อมูลลง database
-      const depositPayload = {
-        userId: form.userId.trim(),
-        amount: Number(form.amount),
-        rate: Number(form.rate),
-        slipImage: uploadedImageUrl,
-        comment: form.comment.trim() || undefined,
-      };
-
-      const depositResponse = await axios.post('/api/deposits', depositPayload);
-
-      if (depositResponse.data?.success) {
-        alert('เพิ่มการเติมเครดิตสำเร็จ');
-        setIsOpen(false);
-        setForm({
-          userId: '',
-          amount: '',
-          rate: '',
-          slipImage: '',
-          comment: '',
-        });
-        clearFile();
-        onCreated?.();
-      } else {
-        throw new Error(depositResponse.data?.error || 'การบันทึกข้อมูลล้มเหลว');
       }
 
     } catch (error: any) {
       console.error('Submit error:', error);
 
-      // 3. ลบรูปที่อัพโหลดไปแล้ว ถ้า database ล้มเหลว
-      if (uploadedImageUrl && uploadState.selectedFile) {
-        try {
-          await fetch('/api/images/cleanup', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl: uploadedImageUrl }),
-          });
-          console.log('🧹 Cleaned up uploaded image after DB failure');
-        } catch (cleanupError) {
-          console.error('❌ Error cleaning up image:', cleanupError);
-        }
-      }
-
       // แสดง error message
-      const errorMessage = error?.response?.data?.error || error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+      const errorMessage = error?.response?.data?.error || error.message || 'เกิดข้อผิดพลาดในการเพิ่มรูปภาพ';
       alert(errorMessage);
 
       // Reset upload state เฉพาะถ้าเกิด error หลังอัพโหลด
-      if (uploadedImageUrl && uploadState.selectedFile) {
+      if (uploadedImageUrl) {
         setUploadState(prev => ({ 
           ...prev, 
           uploading: false,
@@ -226,7 +189,7 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
         closeOnEsc
       >
         <Modal.Header>
-          <Modal.Title>เพิ่มการเติมเครดิตใหม่</Modal.Title>
+          <Modal.Title>เพิ่มรูปภาพใหม่</Modal.Title>
           <Modal.Close onClick={() => setIsOpen(false)} disabled={submitting}>
             <ReactIconComponent icon="FaTimes" setClass="w-5 h-5" />
           </Modal.Close>
@@ -234,70 +197,10 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
 
         <Modal.Body>
           <div className="space-y-5">
-            {/* User ID */}
+            {/* อัพโหลดรูปภาพ */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">
-                User ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="userId"
-                value={form.userId}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                placeholder="กรอก User ID ของผู้ใช้"
-                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                ป้อน ID ของผู้ใช้ที่ต้องการเติมเครดิต
-              </p>
-            </div>
-
-            {/* จำนวนเงิน */}
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                จำนวนเงิน (บาท) <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="amount"
-                type="number"
-                value={form.amount}
-                onChange={handleChange}
-                required
-                min="1"
-                step="0.01"
-                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                placeholder="กรอกจำนวนเงินที่เติม"
-                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              />
-            </div>
-
-            {/* อัตราแลกเปลี่ยน */}
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                อัตราแลกเปลี่ยน <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="rate"
-                type="number"
-                value={form.rate}
-                onChange={handleChange}
-                required
-                min="0.01"
-                step="0.01"
-                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                placeholder="เช่น 1.0, 1.5, 2.0"
-                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                อัตราการแปลงเงินเป็นเครดิต (เช่น 1.0 = 1 บาท = 1 เครดิต)
-              </p>
-            </div>
-
-            {/* อัพโหลดสลิป */}
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                สลิปการโอนเงิน <span className="text-red-500">*</span>
+                เลือกรูปภาพ <span className="text-red-500">*</span>
               </label>
               
               {/* File Input */}
@@ -363,48 +266,59 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
                   </p>
                 </div>
               )}
-
-              {/* Upload Success */}
-              {uploadState.uploadedImageUrl && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <ReactIconComponent icon="FaCheck" setClass="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-green-800 font-medium">อัพโหลดสำเร็จแล้ว</span>
-                  </div>
-                  <p className="text-xs text-green-600 mt-1 break-all">
-                    {uploadState.uploadedImageUrl}
-                  </p>
-                </div>
-              )}
             </div>
 
-            {/* หมายเหตุ */}
+            {/* ชื่อไฟล์ */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">
-                หมายเหตุ
+                ชื่อไฟล์ <span className="text-red-500">*</span>
               </label>
-              <textarea
-                name="comment"
-                value={form.comment}
+              <input
+                name="nameFile"
+                value={form.nameFile}
                 onChange={handleChange}
-                rows={3}
-                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400 resize-vertical"
-                placeholder="หมายเหตุเพิ่มเติม (ไม่บังคับ)"
+                required
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="กรอกชื่อไฟล์"
               />
             </div>
 
-            {/* แสดงจำนวนเครดิตที่จะได้รับ */}
-            {form.amount && form.rate && !isNaN(Number(form.amount)) && !isNaN(Number(form.rate)) && (
-              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="text-sm font-semibold text-green-800 mb-2">จำนวนเครดิตที่จะได้รับ</h4>
-                <p className="text-lg font-bold text-green-600">
-                  {(Number(form.amount) * Number(form.rate)).toLocaleString()} เครดิต
-                </p>
-                <p className="text-xs text-green-600 mt-1">
-                  {Number(form.amount).toLocaleString()} บาท × {Number(form.rate)} = {(Number(form.amount) * Number(form.rate)).toLocaleString()} เครดิต
-                </p>
-              </div>
-            )}
+            {/* ประเภทรูปภาพ */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                ประเภทรูปภาพ <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="modalName"
+                value={form.modalName}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+              >
+                <option value="">-- เลือกประเภทรูปภาพ --</option>
+                <option value="deposit">สลิปการเติมเงิน</option>
+                <option value="withdrawal">สลิปการถอนเงิน</option>
+                <option value="profile">รูปโปรไฟล์</option>
+                <option value="banner">แบนเนอร์</option>
+                <option value="logo">โลโก้</option>
+                <option value="gallery">แกลเลอรี่ทั่วไป</option>
+                <option value="other">อื่นๆ</option>
+              </select>
+            </div>
+
+            {/* ผู้สร้าง */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                ผู้สร้าง
+              </label>
+              <input
+                name="createdBy"
+                value={form.createdBy}
+                onChange={handleChange}
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                placeholder="ระบุผู้สร้าง (ไม่บังคับ)"
+              />
+            </div>
           </div>
         </Modal.Body>
 
@@ -436,4 +350,4 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
   );
 };
 
-export default DepositModalAdd;
+export default GalleryModalAdd;
