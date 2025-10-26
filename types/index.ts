@@ -1,4 +1,4 @@
-import { Transfer, Gift, Purchase, OwnedItem, Deposit, Transaction, User, Wallet, Withdrawal, ActivityLog, LoginHistory, Item, Prisma, AdminUser } from "@prisma/client";
+import { Transfer, Gift, Purchase, OwnedItem, Deposit, Transaction, User, Wallet, Withdrawal, ActivityLog, LoginHistory, Item, Prisma, AdminUser, GalleryDB } from "@prisma/client";
 export interface PaginationResponse {
   page: number;
   pageSize: number;
@@ -114,4 +114,8 @@ export interface TransactionJoinedDetail extends Transaction {
   purchase: PurchaseWithItem | null
   gift: GiftOutgoing | null
   transfer: TransferIncoming | null
+}
+export interface DepositList extends Deposit {
+  user: UserJoined | null
+  slipImage: GalleryDB | null
 }

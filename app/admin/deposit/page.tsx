@@ -1,28 +1,13 @@
 'use client'
 
 import PaginationSelect from '@/components/PaginationSelect'
-import { PaginationResponse } from '@/types'
+import { DepositList, PaginationResponse } from '@/types'
 import { useEffect, useMemo, useState } from 'react'
 import DepositModalAdd from '@/containers/deposit/DepositModalAdd'
 
-interface DepositWithUser {
-  id: string;
-  amount: number;
-  slipImage: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  rate: number;
-  comment?: string;
-  createdAt: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    avatar: string;
-  };
-}
 
 export default function DepositsPage() {
-  const [dataList, setDataList] = useState<DepositWithUser[] | null>(null)
+  const [dataList, setDataList] = useState<DepositList[] | null>(null)
   const [pagination, setPagination] = useState<PaginationResponse>({
     page: 1,
     pageSize: 12,
@@ -137,6 +122,9 @@ export default function DepositsPage() {
       </div>
     )
   }
+  useEffect(() => {
+    console.log(dataList);
+  }, [dataList]);
 
   return (
     <div>
@@ -167,14 +155,14 @@ export default function DepositsPage() {
               <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <img
-                      src={deposit.user.avatar}
-                      alt={deposit.user.username}
+                    {/* <img
+                      src={deposit.user?.avatar}
+                      alt={deposit.user?.username}
                       className="w-10 h-10 rounded-full"
-                    />
+                    /> */}
                     <div>
-                      <h3 className="font-semibold text-gray-900">{deposit.user.username}</h3>
-                      <p className="text-sm text-gray-500">{deposit.user.email}</p>
+                      <h3 className="font-semibold text-gray-900">{deposit.user?.username}</h3>
+                      <p className="text-sm text-gray-500">{deposit.user?.email}</p>
                     </div>
                   </div>
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${deposit.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
@@ -198,9 +186,9 @@ export default function DepositsPage() {
                 <div className="mb-4">
                   <p className="text-sm text-gray-600 mb-2">สลิปอ้างอิง:</p>
                   <img
-                    src={deposit.slipImage}
+                    src={deposit.slipImage?.imageUrl}
                     alt="Payment slip"
-                    className="w-full h-32 object-cover rounded border"
+                    className="w-full aspect-[4/3] object-cover rounded border"
                   />
                 </div>
 

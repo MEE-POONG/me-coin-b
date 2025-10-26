@@ -83,7 +83,7 @@ const GalleryModalView: React.FC<GalleryModalViewProps> = ({
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">ประเภท</label>
+                  <label className="text-sm font-medium text-gray-600">DataBase Name</label>
                   <p className="text-base font-semibold text-gray-900 mt-1">
                     {data.modalName || 'ไม่ระบุ'}
                   </p>

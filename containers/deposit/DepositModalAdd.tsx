@@ -109,6 +109,7 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
       if (uploadState.selectedFile) {
         setUploadState(prev => ({ ...prev, uploading: true }));
 
+       
         const formData = new FormData();
         formData.append('file', uploadState.selectedFile);
         formData.append('nameFile', uploadState.selectedFile.name);
@@ -237,7 +238,7 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
             {/* User ID */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">
-                User ID <span className="text-red-500">*</span>
+                User ID หรือ Discord ID <span className="text-red-500">*</span>
               </label>
               <input
                 name="userId"
@@ -245,11 +246,11 @@ const DepositModalAdd: React.FC<DepositModalAddProps> = ({
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                placeholder="กรอก User ID ของผู้ใช้"
+                placeholder="กรอก User ID หรือ Discord ID ของผู้ใช้"
                 onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               />
               <p className="text-xs text-gray-500 mt-1">
-                ป้อน ID ของผู้ใช้ที่ต้องการเติมเครดิต
+                ป้อน User ID (ObjectId) หรือ Discord ID ของผู้ใช้ที่ต้องการเติมเครดิต
               </p>
             </div>
 

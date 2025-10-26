@@ -34,6 +34,13 @@ export async function PUT(
             wallet: true,
           },
         },
+        slipImage: {
+          select: {
+            id: true,
+            imageUrl: true,
+            nameFile: true,
+          },
+        },
       },
     });
 

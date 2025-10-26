@@ -166,7 +166,8 @@ model Transaction {
 model Deposit {
   id           String        @id @default(auto()) @map("_id") @db.ObjectId
   amount       Float
-  slipImage    String
+  slipImageId  String?       @db.ObjectId
+  slipImage    GalleryDB?    @relation(fields: [slipImageId], references: [id])
   status       DepositStatus @default(PENDING)
   rate         Float         @default(1.0)
   comment      String?
@@ -324,14 +325,16 @@ model LoginHistory {
 }
 
 model GalleryDB {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   nameFile  String
-  imageUrl  String   @unique
+  imageUrl  String    @unique
   modalName String
-  createdAt DateTime @default(now())
-  createdBy String   @default("")
-  updatedAt DateTime @default(now())
-  updatedBy String   @default("")
-  deleteBy  String   @default("")
+  createdAt DateTime  @default(now())
+  createdBy String    @default("")
+  updatedAt DateTime  @default(now())
+  updatedBy String    @default("")
+  deleteBy  String    @default("")
+  Deposit   Deposit[]
+
   @@map("gallery_db")
 }

@@ -18,14 +18,14 @@
 ### ข้อกำหนดเบื้องต้น
 
 - Node.js 18+ 
-- PostgreSQL
+- MongoDB (MongoDB Atlas หรือ MongoDB Local)
 - npm หรือ yarn
 
 ### การติดตั้ง
 
 1. **Clone โปรเจค**
    ```bash
-   cd mecoins
+   cd coin-quest-wallet
    ```
 
 2. **ติดตั้ง dependencies**
@@ -37,9 +37,22 @@
    
    สร้างไฟล์ `.env` และกำหนดค่าต่อไปนี้:
    ```env
-   DATABASE_URL="postgresql://user:password@localhost:5432/mecoins?schema=public"
+   # MongoDB
+   DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/coin-quest?retryWrites=true&w=majority"
+   
+   # NextAuth
    NEXTAUTH_URL="http://localhost:3000"
    NEXTAUTH_SECRET="your-secret-key-here"
+   
+   # Gmail (สำหรับส่ง Email)
+   GMAIL_USER="your-email@gmail.com"
+   GMAIL_PASSWORD="your-app-password"
+   
+   # Cloudflare Images (ถ้าใช้งาน)
+   CLOUDFLARE_ACCOUNT_ID="your-account-id"
+   CLOUDFLARE_API_TOKEN="your-api-token"
+   CFIMG="your-cfimg-domain"
+   CLOUDFLARE_KEY="your-key"
    ```
 
 4. **ตั้งค่าฐานข้อมูล**
@@ -147,11 +160,15 @@ mecoins/
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS, SCSS
 - **Authentication**: NextAuth.js
 - **Database ORM**: Prisma
-- **Database**: PostgreSQL
+- **Database**: MongoDB
 - **Password Hashing**: bcryptjs
+- **Email**: Nodemailer (Gmail)
+- **Image Storage**: Cloudflare Images
+- **Icons**: React Icons
+- **Notifications**: React Hot Toast
 
 ## 🛠️ คำสั่งที่มีประโยชน์
 

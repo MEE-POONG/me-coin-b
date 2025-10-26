@@ -33,6 +33,13 @@ export async function GET(request: NextRequest) {
               accountNumber: true,
             },
           },
+          slipImage: {
+            select: {
+              id: true,
+              imageUrl: true,
+              nameFile: true,
+            },
+          },
         },
         orderBy: { createdAt: 'asc' }, // เก่าสุดก่อน
         skip,

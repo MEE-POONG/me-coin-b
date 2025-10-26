@@ -163,7 +163,7 @@ export default function GalleryPage() {
                 <div key={image.id} className="group bg-gray-50 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <div className="aspect-square relative">
                     <img
-                      src={ImageListUtils.getVariantUrl(image.imageUrl, 'small')}
+                      src={image.imageUrl}
                       alt={image.nameFile}
                       className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
                       onClick={() => window.open(image.imageUrl, '_blank')}

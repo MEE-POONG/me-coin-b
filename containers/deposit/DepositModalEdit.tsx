@@ -6,7 +6,11 @@ import Modal from '@/components/form/Modal';
 interface DepositWithUser {
   id: string;
   amount: number;
-  slipImage: string;
+  slipImage?: {
+    id: string;
+    imageUrl: string;
+    nameFile: string;
+  };
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rate: number;
   comment?: string;
@@ -39,7 +43,7 @@ const DepositModalEdit: React.FC<DepositModalEditProps> = ({
     status: '',
     comment: '',
     amount: '',
-    rate: '',
+    rate: '1.0',
   });
 
   useEffect(() => {
@@ -191,6 +195,7 @@ const DepositModalEdit: React.FC<DepositModalEditProps> = ({
                 name="rate"
                 type="number"
                 value={form.rate}
+                disabled
                 onChange={handleChange}
                 required
                 min="0.01"
@@ -237,22 +242,24 @@ const DepositModalEdit: React.FC<DepositModalEditProps> = ({
             </div>
 
             {/* แสดงข้อมูลสลิป */}
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                สลิปการโอนเงิน
-              </label>
-              <div className="border border-gray-300 rounded-lg p-3 bg-gray-50">
-                <img
-                  src={data.slipImage}
-                  alt="Payment slip"
-                  className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => window.open(data.slipImage, '_blank')}
-                />
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  คลิกเพื่อดูขนาดเต็ม
-                </p>
+            {data.slipImage && (
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  สลิปการโอนเงิน
+                </label>
+                <div className="border border-gray-300 rounded-lg p-3 bg-gray-50">
+                  <img
+                    src={data.slipImage.imageUrl}
+                    alt="Payment slip"
+                    className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => window.open(data.slipImage?.imageUrl, '_blank')}
+                  />
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    คลิกเพื่อดูขนาดเต็ม
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* แสดงจำนวนเครดิตที่จะได้รับ */}
             {form.amount && form.rate && !isNaN(Number(form.amount)) && !isNaN(Number(form.rate)) && (

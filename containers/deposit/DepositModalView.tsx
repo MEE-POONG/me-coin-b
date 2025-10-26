@@ -5,7 +5,11 @@ import Modal from '@/components/form/Modal';
 interface DepositWithUser {
   id: string;
   amount: number;
-  slipImage: string;
+  slipImage?: {
+    id: string;
+    imageUrl: string;
+    nameFile: string;
+  };
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rate: number;
   comment?: string;
@@ -159,23 +163,25 @@ const DepositModalView: React.FC<DepositModalViewProps> = ({
             </div>
 
             {/* สลิปการโอนเงิน */}
-            <div className="bg-gray-50 rounded-lg p-5">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <ReactIconComponent icon="FaImage" setClass="w-5 h-5 text-gray-600" />
-                สลิปการโอนเงิน
-              </h3>
-              <div className="text-center">
-                <img
-                  src={data.slipImage}
-                  alt="Payment slip"
-                  className="max-w-full h-auto max-h-96 mx-auto rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => window.open(data.slipImage, '_blank')}
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  คลิกที่รูปเพื่อดูขนาดเต็ม
-                </p>
+            {data.slipImage && (
+              <div className="bg-gray-50 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <ReactIconComponent icon="FaImage" setClass="w-5 h-5 text-gray-600" />
+                  สลิปการโอนเงิน
+                </h3>
+                <div className="text-center">
+                  <img
+                    src={data.slipImage.imageUrl}
+                    alt="Payment slip"
+                    className="max-w-full h-auto max-h-96 mx-auto rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => window.open(data.slipImage?.imageUrl, '_blank')}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    คลิกที่รูปเพื่อดูขนาดเต็ม
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* หมายเหตุ */}
             {data.comment && (

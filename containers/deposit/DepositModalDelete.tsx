@@ -6,7 +6,11 @@ import Modal from '@/components/form/Modal';
 interface DepositWithUser {
   id: string;
   amount: number;
-  slipImage: string;
+  slipImage?: {
+    id: string;
+    imageUrl: string;
+    nameFile: string;
+  };
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rate: number;
   comment?: string;
@@ -163,15 +167,17 @@ const DepositModalDelete: React.FC<DepositModalDeleteProps> = ({
                 )}
 
                 {/* แสดงสลิปย่อๆ */}
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <div className="text-gray-600 text-sm mb-2">สลิปการโอนเงิน</div>
-                  <img
-                    src={data.slipImage}
-                    alt="Payment slip"
-                    className="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => window.open(data.slipImage, '_blank')}
-                  />
-                </div>
+                {data.slipImage && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="text-gray-600 text-sm mb-2">สลิปการโอนเงิน</div>
+                    <img
+                      src={data.slipImage.imageUrl}
+                      alt="Payment slip"
+                      className="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => window.open(data.slipImage?.imageUrl, '_blank')}
+                    />
+                  </div>
+                )}
               </div>
               
               <p className="text-sm text-red-600 font-medium">
