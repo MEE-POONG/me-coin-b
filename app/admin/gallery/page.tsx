@@ -78,6 +78,14 @@ export default function GalleryPage() {
     return () => controller.abort();
   }, [querySig]);
 
+  const handleCopyImage = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (e) {
+      console.error('ไม่สามารถคัดลอกลิงก์รูปภาพได้:', e);
+    }
+  };
+
   if (loading && !dataList.length) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -175,6 +183,17 @@ export default function GalleryPage() {
                     {/* Overlay actions */}
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <div className="flex gap-2">
+                        <button
+                          title="คัดลอกลิงก์รูปภาพ"
+                          aria-label="คัดลอกลิงก์รูปภาพ"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyImage(image.imageUrl);
+                          }}
+                          className="p-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-colors"
+                        >
+                          <ReactIconComponent icon="FaCopy" setClass="w-4 h-4" />
+                        </button>
                         <GalleryModalView 
                           data={image}
                           triggerClassName="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
@@ -280,6 +299,17 @@ export default function GalleryPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="flex justify-center gap-2">
+                        <button
+                          title="คัดลอกลิงก์รูปภาพ"
+                          aria-label="คัดลอกลิงก์รูปภาพ"
+                          onClick={() => handleCopyImage(image.imageUrl)}
+                          className="px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <ReactIconComponent icon="FaCopy" setClass="w-4 h-4" />
+                            <span className="hidden sm:inline">คัดลอก</span>
+                          </div>
+                        </button>
                         <GalleryModalView 
                           data={image}
                           triggerClassName="px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
