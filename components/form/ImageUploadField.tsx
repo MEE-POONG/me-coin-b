@@ -36,11 +36,18 @@ export default function ImageUploadField({
   const [showGallery, setShowGallery] = useState(false)
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
   const [loadingGallery, setLoadingGallery] = useState(false)
+  const [selectedModalName, setSelectedModalName] = useState<string>('all')
+  const [searchKeyword, setSearchKeyword] = useState<string>('')
 
-  const loadGallery = async () => {
+  const loadGallery = async (modalName: string = 'all') => {
     setLoadingGallery(true)
     try {
-      const response = await fetch('/api/images?modalName=settings&pageSize=50')
+      const params = new URLSearchParams({ pageSize: '100' })
+      if (modalName && modalName !== 'all') {
+        params.append('modalName', modalName)
+      }
+
+      const response = await fetch(`/api/images?${params.toString()}`)
       const data = await response.json()
       if (data.success) {
         setGalleryImages(data.data || [])
@@ -55,9 +62,9 @@ export default function ImageUploadField({
 
   useEffect(() => {
     if (showGallery) {
-      loadGallery()
+      loadGallery(selectedModalName)
     }
-  }, [showGallery])
+  }, [showGallery, selectedModalName])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -123,6 +130,12 @@ export default function ImageUploadField({
   const handleClearImage = () => {
     onChange('')
   }
+
+  // Filter images by search keyword
+  const filteredImages = galleryImages.filter(img =>
+    !searchKeyword ||
+    img.nameFile.toLowerCase().includes(searchKeyword.toLowerCase())
+  )
 
   return (
     <div className="space-y-2">
@@ -207,19 +220,65 @@ export default function ImageUploadField({
         </Modal.Header>
 
         <Modal.Body>
+          {/* Filter and Search */}
+          <div className="mb-4 space-y-3">
+            {/* Modal Name Filter */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Filter by Type</label>
+              <select
+                value={selectedModalName}
+                onChange={(e) => setSelectedModalName(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Images</option>
+                <option value="settings">Settings</option>
+                <option value="deposit">Deposit Slips</option>
+                <option value="withdrawal">Withdrawal Slips</option>
+                <option value="profile">Profile</option>
+                <option value="banner">Banner</option>
+                <option value="logo">Logo</option>
+                <option value="gallery">Gallery</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Search Input */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Search by Filename</label>
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Search images..."
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Results Count */}
+            {!loadingGallery && (
+              <div className="text-sm text-gray-600">
+                Showing {filteredImages.length} of {galleryImages.length} images
+              </div>
+            )}
+          </div>
+
           {loadingGallery ? (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-2 text-gray-600">Loading gallery...</p>
             </div>
-          ) : galleryImages.length === 0 ? (
+          ) : filteredImages.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <p>No images found in gallery.</p>
-              <p className="text-sm mt-2">Upload your first image using the Upload button.</p>
+              <p>No images found.</p>
+              <p className="text-sm mt-2">
+                {searchKeyword
+                  ? 'Try adjusting your search or filter.'
+                  : 'Upload your first image using the Upload button.'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-96 overflow-y-auto p-2">
-              {galleryImages.map((img) => (
+              {filteredImages.map((img) => (
                 <button
                   key={img.id}
                   type="button"

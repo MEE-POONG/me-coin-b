@@ -1,5 +1,5 @@
 import { Prisma, GalleryDB } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 
 // ==================== INTERFACES ====================
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { ActivityLogger } from '@/lib/activity-logger'
 import { getClientInfo } from '@/lib/get-client-info'

@@ -302,6 +302,7 @@ const GalleryModalAdd: React.FC<GalleryModalAddProps> = ({
                 <option value="banner">แบนเนอร์</option>
                 <option value="logo">โลโก้</option>
                 <option value="gallery">แกลเลอรี่ทั่วไป</option>
+                <option value="setting">ตั้งค่าเว็บไซต์</option>
                 <option value="other">อื่นๆ</option>
               </select>
             </div>
