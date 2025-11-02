@@ -338,3 +338,28 @@ model GalleryDB {
 
   @@map("gallery_db")
 }
+
+model SettingWeb {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  name             String   @default("MeCoin Wallet")
+  logo             String?
+  logoColor        String?
+  logoText         String?
+  logoRingOne      String?
+  logoRingTwo      String?
+  description      String?
+  // seo setting
+  copyright        String?
+  contactEmail     String?
+  contactPhone     String?
+  contactAddress   String?
+  contactFacebook  String?
+  contactInstagram String?
+  contactTwitter   String?
+  contactLinkedin  String?
+  // value     Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("setting_web")
+}

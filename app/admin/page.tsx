@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Card from '@/components/Card'
-import EmailTestButton from '@/containers/test/EmailTestButton'
 
 interface Stats {
   totalUsers: number

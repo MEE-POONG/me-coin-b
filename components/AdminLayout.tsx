@@ -14,6 +14,7 @@ const adminMenuItems = [
   { href: '/admin/transactions', label: 'ประวัติการทำธุรกรรม', icon: '📜' },
   { href: '/admin/gallery', label: 'กล้องถ่ายรูป', icon: '🎥' },
   { href: '/admin/test-email', label: 'ทดสอบ Email', icon: '📧' },
+  { href: '/admin/settings', label: 'ตั้งค่าเว็บไซต์', icon: '🌐' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SessionProvider>
-      <div className="min-h-screen bg-purple-200">
+      <div className="min-h-screen ">
         <div className="flex">
           {/* Sidebar ใช้ slide-in/out แทนการซ่อน width */}
           <Sidebar items={adminMenuItems} isOpen={isOpen} onToggle={onToggle} />

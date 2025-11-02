@@ -19,7 +19,8 @@
       "Bash(else mkdir -p components/form)",
       "Bash(npm install:*)",
       "Bash(if [ -d \"containers/admin\" ])",
-      "Bash(else mkdir -p containers/admin)"
+      "Bash(else mkdir -p containers/admin)",
+      "Bash(dir \"d:\\web\\coin-quest-wallet\\app\\admin\\settings\" /s)"
     ],
     "deny": [],
     "ask": []
