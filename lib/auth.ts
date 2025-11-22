@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           console.log('🔐 [NextAuth] Authorize called with:', { email: credentials?.email })
-          
+
           if (!credentials?.email || !credentials?.password) {
             console.log('❌ [NextAuth] Missing credentials')
             throw new Error('กรุณากรอกข้อมูลและรหัสผ่าน')
@@ -116,7 +116,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
           }
         } catch (error) {
-          console.error('❌ [NextAuth] Authorization error:', error)
+          console.error('❌ [NextAuth] Authorization ', error)
           throw error
         }
       },

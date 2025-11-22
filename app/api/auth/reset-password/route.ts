@@ -69,49 +69,111 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: errorMessage }, { status: 400 })
     }
 
-    // ตรวจสอบว่า admin มีอยู่จริง
-    const admin = await prisma.adminUser.findUnique({
-      where: { id: resetToken.userId },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-      },
-    })
-
-    if (!admin) {
-      return NextResponse.json({ error: 'ไม่พบแอดมินนี้ในระบบ' }, { status: 404 })
-    }
-
     // Hash รหัสผ่านใหม่
     const hashedPassword = await bcrypt.hash(newPassword, 10)
+    const { ip, userAgent } = getClientInfo(request)
 
-    // อัปเดตรหัสผ่าน
-    await prisma.adminUser.update({
-      where: { id: admin.id },
-      data: {
-        password: hashedPassword,
-      },
+    let userFound = false
+
+    // 1. ลองค้นหาใน AdminUser
+    const admin = await prisma.adminUser.findUnique({
+      where: { id: resetToken.userId },
     })
 
-    // อัปเดต usedAt ให้เป็นเวลาปัจจุบัน (แต่ยังสามารถใช้ซ้ำได้จนกว่าจะหมดอายุ)
+    if (admin) {
+      userFound = true
+      // อัปเดต AdminUser
+      await prisma.adminUser.update({
+        where: { id: admin.id },
+        data: { password: hashedPassword },
+      })
+
+      await ActivityLogger.userUpdated(
+        admin.id,
+        admin.id,
+        { password: '***' },
+        { password: '***' },
+        ip,
+        userAgent
+      )
+
+      // เช็คว่ามี User ที่ใช้อีเมลเดียวกันไหม ถ้ามีให้อัปเดตด้วย
+      const user = await prisma.user.findUnique({
+        where: { email: admin.email },
+      })
+
+      if (user) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { password: hashedPassword },
+        })
+
+        await ActivityLogger.userUpdated(
+          user.id,
+          user.id,
+          { password: '***' },
+          { password: '***' },
+          ip,
+          userAgent
+        )
+      }
+    } else {
+      // 2. ถ้าไม่เจอใน AdminUser ลองหาใน User
+      const user = await prisma.user.findUnique({
+        where: { id: resetToken.userId },
+      })
+
+      if (user) {
+        userFound = true
+        // อัปเดต User
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { password: hashedPassword },
+        })
+
+        await ActivityLogger.userUpdated(
+          user.id,
+          user.id,
+          { password: '***' },
+          { password: '***' },
+          ip,
+          userAgent
+        )
+
+        // เช็คว่ามี AdminUser ที่ใช้อีเมลเดียวกันไหม ถ้ามีให้อัปเดตด้วย
+        const adminWithEmail = await prisma.adminUser.findUnique({
+          where: { email: user.email },
+        })
+
+        if (adminWithEmail) {
+          await prisma.adminUser.update({
+            where: { id: adminWithEmail.id },
+            data: { password: hashedPassword },
+          })
+
+          await ActivityLogger.userUpdated(
+            adminWithEmail.id,
+            adminWithEmail.id,
+            { password: '***' },
+            { password: '***' },
+            ip,
+            userAgent
+          )
+        }
+      }
+    }
+
+    if (!userFound) {
+      return NextResponse.json({ error: 'ไม่พบผู้ใช้งานในระบบ' }, { status: 404 })
+    }
+
+    // อัปเดต usedAt ให้เป็นเวลาปัจจุบัน
     await prisma.passwordResetToken.update({
       where: { id: resetToken.id },
       data: {
         usedAt: new Date(),
       },
     })
-
-    // บันทึก activity log
-    const { ip, userAgent } = getClientInfo(request)
-    await ActivityLogger.userUpdated(
-      admin.id,
-      admin.id,
-      { password: '***' },
-      { password: '***' },
-      ip,
-      userAgent
-    )
 
     return NextResponse.json({
       success: true,
