@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'กรุณาระบุ userId' }, { status: 400 })
     }
 
-    // ค้นหาผู้ใช้
-    const user = await prisma.adminUser.findUnique({
+    // ค้นหาผู้ใช้ (Admin หรือ User)
+    let user = await prisma.adminUser.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     // ตรวจสอบว่ามีการตั้งค่าอีเมลหรือไม่
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASSWORD) {
-      console.warn('⚠️ Gmail credentials not configured')
+
       return NextResponse.json({
         success: true,
         message: 'ระบบไม่สามารถส่งอีเมลได้ เนื่องจากไม่ได้ตั้งค่า Email',
@@ -73,20 +73,20 @@ export async function POST(request: NextRequest) {
     })
 
     if (!emailResult.success) {
-      console.error('❌ Failed to send email:', emailResult.error)
+
       return NextResponse.json({
         error: 'ไม่สามารถส่งอีเมลได้ กรุณาลองใหม่อีกครั้ง',
       }, { status: 500 })
     }
 
-    console.log('✅ Reset password email sent to:', user.email)
+
 
     return NextResponse.json({
       success: true,
       message: 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว',
     })
   } catch (error) {
-    console.error('❌ Error in forgot password send:', error)
+
     return NextResponse.json({
       error: 'เกิดข้อผิดพลาดในการส่งอีเมล',
     }, { status: 500 })

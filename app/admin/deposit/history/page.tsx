@@ -11,7 +11,11 @@ import DepositModalDelete from '@/containers/deposit/DepositModalDelete'
 interface DepositWithUser {
   id: string;
   amount: number;
-  slipImage: string;
+  slipImage?: {
+    id: string;
+    imageUrl: string;
+    nameFile: string;
+  };
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rate: number;
   comment?: string;
@@ -116,7 +120,7 @@ export default function DepositHistoryPage() {
             <option value="APPROVED">อนุมัติแล้ว</option>
             <option value="REJECTED">ปฏิเสธ</option>
           </select>
-          <DepositModalAdd 
+          <DepositModalAdd
             onCreated={() => {
               const controller = new AbortController();
               fetchDeposits(controller.signal);
@@ -182,21 +186,20 @@ export default function DepositHistoryPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      deposit.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${deposit.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                       deposit.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                        'bg-red-100 text-red-800'
+                      }`}>
                       {deposit.status === 'PENDING' ? 'รอดำเนินการ' :
-                     deposit.status === 'APPROVED' ? 'อนุมัติแล้ว' : 'ปฏิเสธ'}
+                        deposit.status === 'APPROVED' ? 'อนุมัติแล้ว' : 'ปฏิเสธ'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <img
-                      src={deposit.slipImage}
+                      src={deposit.slipImage?.imageUrl}
                       alt="Payment slip"
                       className="w-16 h-16 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
-                      onClick={() => window.open(deposit.slipImage, '_blank')}
+                      onClick={() => window.open(deposit.slipImage?.imageUrl, '_blank')}
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -213,11 +216,11 @@ export default function DepositHistoryPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex justify-center gap-2">
-                      <DepositModalView 
+                      <DepositModalView
                         data={deposit}
                         triggerClassName="px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
                       />
-                      <DepositModalEdit 
+                      <DepositModalEdit
                         data={deposit}
                         onUpdated={() => {
                           const controller = new AbortController();
@@ -225,7 +228,7 @@ export default function DepositHistoryPage() {
                         }}
                         triggerClassName="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                       />
-                      <DepositModalDelete 
+                      <DepositModalDelete
                         data={deposit}
                         onDeleted={() => {
                           const controller = new AbortController();

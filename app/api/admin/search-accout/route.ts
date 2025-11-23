@@ -18,13 +18,34 @@ export async function GET(request: NextRequest) {
       ]
     } : {}
 
-    const admin = await prisma.adminUser.findFirst({
+    let account = await prisma.adminUser.findFirst({
       where,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      }
     })
+
+    if (!account) {
+      // ถ้าไม่เจอใน Admin ให้หาใน User ปกติ
+      const user = await prisma.user.findFirst({
+        where,
+        select: {
+          id: true,
+          username: true,
+          email: true,
+        }
+      })
+
+      if (user) {
+        account = user
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      data: admin,
+      data: account,
     })
   } catch (error) {
     console.error('Error fetching admins:', error)

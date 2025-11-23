@@ -91,7 +91,7 @@ async function main() {
   const existingRate = await prisma.depositRate.findFirst({
     where: { name: 'Standard Rate' },
   })
-  
+
   if (!existingRate) {
     await prisma.depositRate.create({
       data: {
@@ -114,39 +114,39 @@ async function main() {
     category: string
     rarity: ItemRarity
   }> = [
-    {
-      name: 'Bronze Sword',
-      description: 'A basic sword for beginners',
-      price: 500,
-      imageUrl: 'https://via.placeholder.com/150/8B4513/FFFFFF?text=Bronze+Sword',
-      category: 'Weapon',
-      rarity: ItemRarity.COMMON,
-    },
-    {
-      name: 'Silver Shield',
-      description: 'A sturdy shield for protection',
-      price: 1000,
-      imageUrl: 'https://via.placeholder.com/150/C0C0C0/000000?text=Silver+Shield',
-      category: 'Armor',
-      rarity: ItemRarity.RARE,
-    },
-    {
-      name: 'Golden Helmet',
-      description: 'A shiny helmet for the brave',
-      price: 2500,
-      imageUrl: 'https://via.placeholder.com/150/FFD700/000000?text=Golden+Helmet',
-      category: 'Armor',
-      rarity: ItemRarity.EPIC,
-    },
-    {
-      name: 'Dragon Blade',
-      description: 'A legendary sword forged by dragons',
-      price: 10000,
-      imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Dragon+Blade',
-      category: 'Weapon',
-      rarity: ItemRarity.LEGENDARY,
-    },
-  ]
+      {
+        name: 'Bronze Sword',
+        description: 'A basic sword for beginners',
+        price: 500,
+        imageUrl: 'https://via.placeholder.com/150/8B4513/FFFFFF?text=Bronze+Sword',
+        category: 'Weapon',
+        rarity: ItemRarity.COMMON,
+      },
+      {
+        name: 'Silver Shield',
+        description: 'A sturdy shield for protection',
+        price: 1000,
+        imageUrl: 'https://via.placeholder.com/150/C0C0C0/000000?text=Silver+Shield',
+        category: 'Armor',
+        rarity: ItemRarity.RARE,
+      },
+      {
+        name: 'Golden Helmet',
+        description: 'A shiny helmet for the brave',
+        price: 2500,
+        imageUrl: 'https://via.placeholder.com/150/FFD700/000000?text=Golden+Helmet',
+        category: 'Armor',
+        rarity: ItemRarity.EPIC,
+      },
+      {
+        name: 'Dragon Blade',
+        description: 'A legendary sword forged by dragons',
+        price: 10000,
+        imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Dragon+Blade',
+        category: 'Weapon',
+        rarity: ItemRarity.LEGENDARY,
+      },
+    ]
 
   for (const itemData of items) {
     await prisma.item.create({
@@ -156,27 +156,33 @@ async function main() {
   console.log('✅ Created sample items')
 
   // สร้าง Deposit ตัวอย่าง
-  const deposit1 = await prisma.deposit.create({
-    data: {
-      amount: 5000,
-      slipImage: 'https://via.placeholder.com/300/0ea5e9/FFFFFF?text=Slip+5000',
-      status: 'APPROVED',
-      rate: 1.0,
-      userId: normalUser.id,
-    },
-  })
+  // const deposit1 = await prisma.deposit.create({
+  //   data: {
+  //     amount: 5000,
+  //     slipImage: {
+  //       imageUrl: 'https://via.placeholder.com/300/0ea5e9/FFFFFF?text=Slip+5000',
+  //       nameFile: 'Slip+5000',
+  //     },
+  //     status: 'APPROVED',
+  //     rate: 1.0,
+  //     userId: normalUser.id,
+  //   },
+  // })
   console.log('✅ Created sample deposit (approved)')
 
   // สร้าง Deposit ที่รออนุมัติ
-  await prisma.deposit.create({
-    data: {
-      amount: 2000,
-      slipImage: 'https://via.placeholder.com/300/0ea5e9/FFFFFF?text=Slip+2000',
-      status: 'PENDING',
-      rate: 1.0,
-      userId: premiumUser.id,
-    },
-  })
+  // await prisma.deposit.create({
+  //   data: {
+  //     amount: 2000,
+  //     slipImage: {
+  //       imageUrl: 'https://via.placeholder.com/300/0ea5e9/FFFFFF?text=Slip+2000',
+  //       nameFile: 'Slip+2000',
+  //     },
+  //     status: 'PENDING',
+  //     rate: 1.0,
+  //     userId: premiumUser.id,
+  //   },
+  // })
   console.log('✅ Created pending deposit')
 
   // สร้าง Withdrawal ที่รออนุมัติ
@@ -190,17 +196,17 @@ async function main() {
   console.log('✅ Created pending withdrawal')
 
   // สร้าง Transaction สำหรับ deposit ที่ approved
-  await prisma.transaction.create({
-    data: {
-      amount: 5000,
-      type: 'DEPOSIT',
-      status: 'COMPLETED',
-      slipImage: deposit1.slipImage,
-      userId: normalUser.id,
-      walletId: normalWallet.id,
-      depositId: deposit1.id,
-    },
-  })
+  // await prisma.transaction.create({
+  //   data: {
+  //     amount: 5000,
+  //     type: 'DEPOSIT',
+  //     status: 'COMPLETED',
+  //     slipImage: deposit1.slipImage,
+  //     userId: normalUser.id,
+  //     walletId: normalWallet.id,
+  //     depositId: deposit1.id,
+  //   },
+  // })
   console.log('✅ Created transaction for deposit')
 
   // ซื้อไอเทมตัวอย่าง
@@ -278,35 +284,35 @@ async function main() {
   console.log('✅ Created sample login history')
 
   // สร้าง ActivityLog ตัวอย่าง
-  await prisma.activityLog.createMany({
-    data: [
-      {
-        userId: admin.id,
-        action: 'LOGIN',
-        model: 'User',
-        description: 'Admin เข้าสู่ระบบ',
-        ipAddress: '127.0.0.1',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-      },
-      {
-        userId: admin.id,
-        action: 'APPROVE',
-        model: 'Deposit',
-        modelId: deposit1.id,
-        description: `อนุมัติคำขอฝากเงิน ${deposit1.amount} บาท`,
-        ipAddress: '127.0.0.1',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-      },
-      {
-        userId: normalUser.id,
-        action: 'CREATE',
-        model: 'Purchase',
-        description: 'ซื้อไอเทม Bronze Sword',
-        ipAddress: '192.168.1.100',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-      },
-    ],
-  })
+  // await prisma.activityLog.createMany({
+  //   data: [
+  //     {
+  //       userId: admin.id,
+  //       action: 'LOGIN',
+  //       model: 'User',
+  //       description: 'Admin เข้าสู่ระบบ',
+  //       ipAddress: '127.0.0.1',
+  //       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+  //     },
+  //     {
+  //       userId: admin.id,
+  //       action: 'APPROVE',
+  //       model: 'Deposit',
+  //       modelId: deposit1.id,
+  //       description: `อนุมัติคำขอฝากเงิน ${deposit1.amount} บาท`,
+  //       ipAddress: '127.0.0.1',
+  //       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+  //     },
+  //     {
+  //       userId: normalUser.id,
+  //       action: 'CREATE',
+  //       model: 'Purchase',
+  //       description: 'ซื้อไอเทม Bronze Sword',
+  //       ipAddress: '192.168.1.100',
+  //       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+  //     },
+  //   ],
+  // })
   console.log('✅ Created sample activity logs')
 
   console.log('\n🎉 Seed completed successfully!')

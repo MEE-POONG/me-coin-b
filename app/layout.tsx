@@ -5,10 +5,9 @@ import '../styles/index.scss'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'MeCoins - ระบบเติมเครดิต',
-  description: 'ระบบจัดการเครดิตออนไลน์',
-}
-
+  title: "MeCoins - MeGuild Financial System",
+  description: "ระบบการเงินของ MeGuild สำหรับจัดการ MeCoins",
+};
 export default function RootLayout({
   children,
 }: {

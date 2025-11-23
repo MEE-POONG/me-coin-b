@@ -53,7 +53,7 @@ export default function ImageUploadField({
         setGalleryImages(data.data || [])
       }
     } catch (err) {
-      console.error('Failed to load gallery:', err)
+
       alert('Failed to load gallery')
     } finally {
       setLoadingGallery(false)
@@ -110,7 +110,7 @@ export default function ImageUploadField({
         throw new Error('Upload failed: No image URL returned')
       }
     } catch (err) {
-      console.error('Upload error:', err)
+
       const errorMessage = err instanceof Error ? err.message : 'Failed to upload image'
       alert(errorMessage)
     } finally {
@@ -151,9 +151,8 @@ export default function ImageUploadField({
           onChange={handleUrlChange}
           disabled={disabled}
           placeholder="https://..."
-          className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-            error ? 'border-red-400' : 'border-gray-300'
-          }`}
+          className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${error ? 'border-red-400' : 'border-gray-300'
+            }`}
         />
         {!disabled && value && (
           <button
@@ -283,11 +282,10 @@ export default function ImageUploadField({
                   key={img.id}
                   type="button"
                   onClick={() => handleSelectFromGallery(img.imageUrl)}
-                  className={`relative group p-2 border-2 rounded-lg cursor-pointer hover:border-blue-500 transition-all ${
-                    value === img.imageUrl
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:bg-gray-50'
-                  }`}
+                  className={`relative group p-2 border-2 rounded-lg cursor-pointer hover:border-blue-500 transition-all ${value === img.imageUrl
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:bg-gray-50'
+                    }`}
                   title={img.nameFile}
                 >
                   <img

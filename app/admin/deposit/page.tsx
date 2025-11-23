@@ -52,7 +52,7 @@ export default function DepositsPage() {
       setPagination((prev) => ({ ...prev, ...data.pagination }));
     } catch (e) {
       if ((e as any)?.name !== 'AbortError') {
-        console.error('Error fetching deposits:', e);
+
       }
     } finally {
       setLoading(false);
@@ -72,11 +72,11 @@ export default function DepositsPage() {
         await fetchDeposits();
       } else {
         const error = await res.json();
-        console.log(93, `error: ${error}`, error.error);
+
         alert(error.error || 'Failed to approve deposit');
       }
     } catch (error) {
-      console.error('Error approving deposit:', error);
+
       alert('Failed to approve deposit');
     } finally {
       setProcessing(null);
@@ -102,7 +102,7 @@ export default function DepositsPage() {
         alert(error.error || 'Failed to reject deposit');
       }
     } catch (error) {
-      console.error('Error rejecting deposit:', error);
+
       alert('Failed to reject deposit');
     } finally {
       setProcessing(null);
@@ -122,9 +122,7 @@ export default function DepositsPage() {
       </div>
     )
   }
-  useEffect(() => {
-    console.log(dataList);
-  }, [dataList]);
+
 
   return (
     <div>

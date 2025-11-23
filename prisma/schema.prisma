@@ -61,11 +61,15 @@ model User {
   id                String         @id @default(auto()) @map("_id") @db.ObjectId
   discordId         String?
   email             String         @unique
+  emailVerified     Boolean        @default(false)
+  emailVerifiedAt   DateTime?
   password          String
+  pin               String? // PIN สำหรับการทำธุรกรรม (6 หลัก, hashed)
   username          String         @unique
   name              String?
   phone             String?
   accountType       String? //bank, mobile_money, etc.
+  bankName          String?
   accountNumber     String         @unique
   accountName       String? //ชื่อบัญชี
   avatar            String         @default("https://via.placeholder.com/150")
@@ -123,6 +127,20 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+model EmailVerificationToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  email     String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([email])
+  @@map("email_verification_tokens")
+}
+
 model Wallet {
   id           String        @id @default(auto()) @map("_id") @db.ObjectId
   balance      Float         @default(0)
@@ -169,6 +187,7 @@ model Deposit {
   slipImageId  String?       @db.ObjectId
   slipImage    GalleryDB?    @relation(fields: [slipImageId], references: [id])
   status       DepositStatus @default(PENDING)
+  paymentId    String?
   rate         Float         @default(1.0)
   comment      String?
   userId       String        @db.ObjectId
@@ -363,3 +382,14 @@ model SettingWeb {
 
   @@map("setting_web")
 }
+
+// ส่วน	หน้าที่หลัก	ความสัมพันธ์
+// User ข้อมูลผู้ใช้ Wallet, Transaction, Gift, Transfer
+// Wallet	กระเป๋าเงิน	User, Transaction
+// Transaction	ประวัติการเงิน	Deposit, Withdrawal, Gift, Purchase, Transfer
+// Deposit/Withdrawal	ฝากถอนเงิน	Transaction, GalleryDB
+// Item/Purchase/Gift	ระบบสินค้าและของขวัญ	OwnedItem, User
+// Transfer	การโอนเงิน	User (ผู้ส่ง/ผู้รับ)
+// ActivityLog/LoginHistory	การติดตามกิจกรรม	User
+// SettingWeb	การตั้งค่าเว็บไซต์	ไม่มีการอ้างอิง
+// GalleryDB	เก็บภาพ	Deposit
