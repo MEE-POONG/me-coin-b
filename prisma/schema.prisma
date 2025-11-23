@@ -1,0 +1,395 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  NORMAL
+  PREMIUM
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL // ← ต้องใช้ WITHDRAWAL ไม่ใช่ WITHDRAW
+  PURCHASE
+  GIFT
+  TRANSFER
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum DepositStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ItemRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model User {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  discordId         String?
+  email             String         @unique
+  emailVerified     Boolean        @default(false)
+  emailVerifiedAt   DateTime?
+  password          String
+  pin               String? // PIN สำหรับการทำธุรกรรม (6 หลัก, hashed)
+  username          String         @unique
+  name              String?
+  phone             String?
+  accountType       String? //bank, mobile_money, etc.
+  bankName          String?
+  accountNumber     String         @unique
+  accountName       String? //ชื่อบัญชี
+  avatar            String         @default("https://via.placeholder.com/150")
+  role              UserRole       @default(NORMAL)
+  isBlocked         Boolean        @default(false)
+  blockedReason     String?
+  blockedAt         DateTime?
+  blockedUntil      DateTime?
+  blockedBy         String?        @db.ObjectId
+  wallet            Wallet?
+  deposits          Deposit[]
+  withdrawals       Withdrawal[]
+  purchases         Purchase[]
+  sentGifts         Gift[]         @relation("SentGifts")
+  receivedGifts     Gift[]         @relation("ReceivedGifts")
+  ownedItems        OwnedItem[]
+  sentTransfers     Transfer[]     @relation("SentTransfers")
+  receivedTransfers Transfer[]     @relation("ReceivedTransfers")
+  activityLogs      ActivityLog[]
+  loginHistory      LoginHistory[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  isDeleted         Boolean        @default(false)
+  Transaction       Transaction[]
+
+  @@map("users")
+}
+
+model AdminUser {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  discordId     String?
+  email         String        @unique
+  password      String
+  username      String        @unique
+  name          String?
+  phone         String?
+  accountType   String? //bank, mobile_money, etc.
+  accountNumber String        @unique
+  accountName   String? //ชื่อบัญชี
+  avatar        String        @default("https://via.placeholder.com/150")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  transactions  Transaction[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  email     String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([email])
+  @@map("email_verification_tokens")
+}
+
+model Wallet {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  balance      Float         @default(0)
+  userId       String        @unique @db.ObjectId
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("wallets")
+}
+
+model Transaction {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  amount       Float
+  type         TransactionType
+  status       TransactionStatus @default(PENDING)
+  slipImage    String?
+  userId       String            @db.ObjectId
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId      String?           @db.ObjectId
+  adminUser    AdminUser?        @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  walletId     String            @db.ObjectId
+  wallet       Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  depositId    String?           @db.ObjectId
+  deposit      Deposit?          @relation(fields: [depositId], references: [id])
+  withdrawalId String?           @db.ObjectId
+  withdrawal   Withdrawal?       @relation(fields: [withdrawalId], references: [id])
+  purchaseId   String?           @db.ObjectId
+  purchase     Purchase?         @relation(fields: [purchaseId], references: [id])
+  giftId       String?           @db.ObjectId
+  gift         Gift?             @relation(fields: [giftId], references: [id])
+  transferId   String?           @db.ObjectId
+  transfer     Transfer?         @relation(fields: [transferId], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("transactions")
+}
+
+model Deposit {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  amount       Float
+  slipImageId  String?       @db.ObjectId
+  slipImage    GalleryDB?    @relation(fields: [slipImageId], references: [id])
+  status       DepositStatus @default(PENDING)
+  paymentId    String?
+  rate         Float         @default(1.0)
+  comment      String?
+  userId       String        @db.ObjectId
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("deposits")
+}
+
+model Withdrawal {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  amount       Float
+  status       WithdrawalStatus @default(PENDING)
+  comment      String?
+  userId       String           @db.ObjectId
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@map("withdrawals")
+}
+
+model Item {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  imageUrl    String?
+  category    String
+  rarity      ItemRarity
+  ownedItems  OwnedItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("items")
+}
+
+model OwnedItem {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId    String     @db.ObjectId
+  item      Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  isGifted  Boolean    @default(false)
+  purchases Purchase[]
+  gifts     Gift[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("owned_items")
+}
+
+model Purchase {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @db.ObjectId
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ownedItemId  String        @db.ObjectId
+  ownedItem    OwnedItem     @relation(fields: [ownedItemId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("purchases")
+}
+
+model Gift {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  senderId     String        @db.ObjectId
+  sender       User          @relation("SentGifts", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId  String        @db.ObjectId
+  recipient    User          @relation("ReceivedGifts", fields: [recipientId], references: [id], onDelete: Cascade)
+  ownedItemId  String        @db.ObjectId
+  ownedItem    OwnedItem     @relation(fields: [ownedItemId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("gifts")
+}
+
+model DepositRate {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  rate      Float
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("deposit_rates")
+}
+
+model Transfer {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  amount       Float
+  status       TransferStatus @default(PENDING)
+  comment      String?
+  senderId     String         @db.ObjectId
+  sender       User           @relation("SentTransfers", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId   String         @db.ObjectId
+  receiver     User           @relation("ReceivedTransfers", fields: [receiverId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("transfers")
+}
+
+enum ActivityAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  APPROVE
+  REJECT
+  BLOCK
+  UNBLOCK
+}
+
+model ActivityLog {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String?        @db.ObjectId
+  user        User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action      ActivityAction
+  model       String // ชื่อ model ที่ถูกกระทำ เช่น "User", "Item", "Transaction"
+  modelId     String? // ID ของ record ที่ถูกกระทำ
+  oldData     String? // JSON string ของข้อมูลเดิม (สำหรับ UPDATE, DELETE)
+  newData     String? // JSON string ของข้อมูลใหม่ (สำหรับ CREATE, UPDATE)
+  description String? // คำอธิบายเพิ่มเติม
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime       @default(now())
+
+  @@map("activity_logs")
+}
+
+model LoginHistory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String?  @db.ObjectId
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress  String
+  userAgent  String
+  success    Boolean  @default(true)
+  failReason String? // เหตุผลที่ login ไม่สำเร็จ
+  createdAt  DateTime @default(now())
+
+  @@map("login_history")
+}
+
+model GalleryDB {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  nameFile  String
+  imageUrl  String    @unique
+  modalName String
+  createdAt DateTime  @default(now())
+  createdBy String    @default("")
+  updatedAt DateTime  @default(now())
+  updatedBy String    @default("")
+  deleteBy  String    @default("")
+  Deposit   Deposit[]
+
+  @@map("gallery_db")
+}
+
+model SettingWeb {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  name             String   @default("MeCoin Wallet")
+  logo             String?
+  logoColor        String?
+  logoText         String?
+  logoRingOne      String?
+  logoRingTwo      String?
+  description      String?
+  // seo setting
+  copyright        String?
+  contactEmail     String?
+  contactPhone     String?
+  contactAddress   String?
+  contactFacebook  String?
+  contactInstagram String?
+  contactTwitter   String?
+  contactLinkedin  String?
+  // value     Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("setting_web")
+}
+
+// ส่วน	หน้าที่หลัก	ความสัมพันธ์
+// User ข้อมูลผู้ใช้ Wallet, Transaction, Gift, Transfer
+// Wallet	กระเป๋าเงิน	User, Transaction
+// Transaction	ประวัติการเงิน	Deposit, Withdrawal, Gift, Purchase, Transfer
+// Deposit/Withdrawal	ฝากถอนเงิน	Transaction, GalleryDB
+// Item/Purchase/Gift	ระบบสินค้าและของขวัญ	OwnedItem, User
+// Transfer	การโอนเงิน	User (ผู้ส่ง/ผู้รับ)
+// ActivityLog/LoginHistory	การติดตามกิจกรรม	User
+// SettingWeb	การตั้งค่าเว็บไซต์	ไม่มีการอ้างอิง
+// GalleryDB	เก็บภาพ	Deposit

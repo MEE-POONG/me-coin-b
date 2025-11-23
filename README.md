@@ -1,73 +1,206 @@
-# Welcome to your Lovable project
+# 💰 MeCoins - ระบบเติมเครดิต
 
-## Project info
+ระบบจัดการเครดิตออนไลน์ที่สร้างด้วย Next.js, TypeScript, Tailwind CSS และ Prisma
 
-**URL**: https://lovable.dev/projects/7a25303d-e92a-489b-ae23-e78b3184f9c7
+## ✨ คุณสมบัติ
 
-## How can I edit this code?
+- 🔐 **ระบบ Authentication** - เข้าสู่ระบบด้วย NextAuth.js
+- 👥 **แยกสิทธิ์การใช้งาน** - Admin และ User มี layout และฟีเจอร์แยกกัน
+- 💳 **เติมเครดิต** - ผู้ใช้สามารถเติมเครดิตได้ง่าย
+- 📊 **ประวัติการใช้งาน** - ดูประวัติการเติมและใช้เครดิตทั้งหมด
+- 📈 **Dashboard แอดมิน** - จัดการผู้ใช้และดูสถิติทั้งหมด
+- 🎨 **UI/UX ที่สวยงาม** - ออกแบบด้วย Tailwind CSS
+- 📱 **Responsive Design** - รองรับทุกขนาดหน้าจอ
+- ❌ **หน้า 404 แบบกำหนดเอง** - จัดการหน้าที่ไม่พบ
 
-There are several ways of editing your application.
+## 🚀 เริ่มต้นใช้งาน
 
-**Use Lovable**
+### ข้อกำหนดเบื้องต้น
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7a25303d-e92a-489b-ae23-e78b3184f9c7) and start prompting.
+- Node.js 18+ 
+- MongoDB (MongoDB Atlas หรือ MongoDB Local)
+- npm หรือ yarn
 
-Changes made via Lovable will be committed automatically to this repo.
+### การติดตั้ง
 
-**Use your preferred IDE**
+1. **Clone โปรเจค**
+   ```bash
+   cd coin-quest-wallet
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. **ติดตั้ง dependencies**
+   ```bash
+   npm install
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3. **ตั้งค่า Environment Variables**
+   
+   สร้างไฟล์ `.env` และกำหนดค่าต่อไปนี้:
+   ```env
+   # MongoDB
+   DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/coin-quest?retryWrites=true&w=majority"
+   
+   # NextAuth
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key-here"
+   
+   # Gmail (สำหรับส่ง Email)
+   GMAIL_USER="your-email@gmail.com"
+   GMAIL_PASSWORD="your-app-password"
+   
+   # Cloudflare Images (ถ้าใช้งาน)
+   CLOUDFLARE_ACCOUNT_ID="your-account-id"
+   CLOUDFLARE_API_TOKEN="your-api-token"
+   CFIMG="your-cfimg-domain"
+   CLOUDFLARE_KEY="your-key"
+   ```
 
-Follow these steps:
+4. **ตั้งค่าฐานข้อมูล**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   npx prisma db seed
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+5. **รันโปรเจค**
+   ```bash
+   npm run dev
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+6. **เปิดเบราว์เซอร์**
+   
+   ไปที่ [http://localhost:3000](http://localhost:3000)
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🔑 บัญชีทดสอบ
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Admin
+- Email: `admin@example.com`
+- Password: `admin123`
+- สิทธิ์: จัดการผู้ใช้ ดูสถิติ และประวัติทั้งหมด
+
+### User
+- Email: `user@example.com`
+- Password: `user123`
+- สิทธิ์: เติมเครดิต และดูประวัติของตัวเอง
+
+## 📁 โครงสร้างโปรเจค
+
+```
+mecoins/
+├── app/
+│   ├── api/              # API Routes
+│   │   ├── auth/         # NextAuth endpoints
+│   │   ├── admin/        # Admin APIs
+│   │   ├── users/        # User APIs
+│   │   └── transactions/ # Transaction APIs
+│   ├── admin/            # หน้าแอดมิน
+│   │   ├── users/        # จัดการผู้ใช้
+│   │   └── transactions/ # ประวัติทั้งหมด
+│   ├── dashboard/        # หน้าผู้ใช้
+│   │   ├── topup/        # เติมเครดิต
+│   │   └── history/      # ประวัติ
+│   ├── login/            # หน้าเข้าสู่ระบบ
+│   └── not-found.tsx     # หน้า 404
+├── components/           # React Components
+│   ├── AdminLayout.tsx   # Layout สำหรับแอดมิน
+│   ├── UserLayout.tsx    # Layout สำหรับผู้ใช้
+│   ├── Navbar.tsx        # Navigation bar
+│   ├── Sidebar.tsx       # Sidebar menu
+│   └── Card.tsx          # Card component
+├── lib/
+│   ├── auth.ts          # NextAuth configuration
+│   └── prisma.ts        # Prisma client
+├── prisma/
+│   ├── schema.prisma    # Database schema
+│   └── seed.ts          # Database seeding
+└── types/
+    └── index.ts         # TypeScript types
 ```
 
-**Edit a file directly in GitHub**
+## 🎯 ฟีเจอร์หลัก
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### สำหรับผู้ใช้ (User)
+- ✅ แดชบอร์ดแสดงยอดเครดิตคงเหลือ
+- ✅ เติมเครดิตพร้อมระบุหมายเหตุ
+- ✅ ดูประวัติการเติมและใช้เครดิต (พร้อม Pagination)
+- ✅ ตรวจสอบยอดคงเหลือแบบ Real-time
 
-**Use GitHub Codespaces**
+### สำหรับแอดมิน (Admin)
+- ✅ Dashboard แสดงสถิติภาพรวม
+  - จำนวนผู้ใช้ทั้งหมด
+  - จำนวนธุรกรรมทั้งหมด
+  - ยอดเติมเครดิตรวม
+  - ยอดใช้เครดิตรวม
+- ✅ จัดการผู้ใช้ทั้งหมด (พร้อม Pagination)
+- ✅ ดูประวัติธุรกรรมทั้งหมดของทุกคน (พร้อม Pagination)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔒 ระบบความปลอดภัย
 
-## What technologies are used for this project?
+- 🔐 Password hashing ด้วย bcrypt
+- 🛡️ Protected routes ด้วย NextAuth middleware
+- 🔑 JWT-based sessions
+- 👮 Role-based access control (RBAC)
+- ✋ API route protection
 
-This project is built with:
+## 🗄️ Database Schema
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### User
+- id, email, name, password
+- role (ADMIN/USER)
+- balance (ยอดเครดิตคงเหลือ)
+- createdAt, updatedAt
 
-## How can I deploy this project?
+### Transaction
+- id, userId, type (DEPOSIT/WITHDRAW)
+- amount, description
+- balanceBefore, balanceAfter
+- createdAt
 
-Simply open [Lovable](https://lovable.dev/projects/7a25303d-e92a-489b-ae23-e78b3184f9c7) and click on Share -> Publish.
+## 📦 เทคโนโลยีที่ใช้
 
-## Can I connect a custom domain to my Lovable project?
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS, SCSS
+- **Authentication**: NextAuth.js
+- **Database ORM**: Prisma
+- **Database**: MongoDB
+- **Password Hashing**: bcryptjs
+- **Email**: Nodemailer (Gmail)
+- **Image Storage**: Cloudflare Images
+- **Icons**: React Icons
+- **Notifications**: React Hot Toast
 
-Yes it is!
+## 🛠️ คำสั่งที่มีประโยชน์
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+# Development
+npm run dev
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Build for production
+npm run build
+
+# Start production server
+npm start
+
+# Lint code
+npm run lint
+
+# Prisma commands
+npx prisma studio          # เปิด Prisma Studio
+npx prisma generate        # Generate Prisma Client
+npx prisma db push         # Push schema to database
+npx prisma db seed         # Seed database
+```
+
+## 📝 License
+
+MIT License - ใช้งานได้อย่างอิสระ
+
+## 👨‍💻 Developer
+
+สร้างโดย AI Assistant สำหรับการเรียนรู้และพัฒนาต่อยอด
+
+---
+
+**Happy Coding! 🚀**
+

@@ -1,0 +1,161 @@
+  <tbody className="divide-y divide-gray-200">
+              {dataList?.map((tx) => {
+                const user = tx?.user
+                const admin = tx?.adminUser
+                const wallet = tx?.wallet
+                const deposit = tx?.deposit
+                const withdrawal = tx?.withdrawal
+                const slip =
+                  deposit?.slipImage ||
+                  (withdrawal as any)?.slipImage || // เผื่อมีฟิลด์ในอนาคต
+                  tx?.slipImage
+
+                // สถานะย่อย: ถ้าเป็น DEPOSIT ใช้ deposit.status, ถ้า WITHDRAWAL ใช้ withdrawal.status
+                const subStatus =
+                  tx?.type === 'DEPOSIT'
+                    ? deposit?.status
+                    : tx?.type === 'WITHDRAWAL'
+                      ? (withdrawal as any)?.status
+                      : undefined
+
+                return (
+                  <tr key={tx?.id} className="hover:bg-gray-50 align-top">
+                    {/* ผู้ใช้ */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <div className="flex items-center gap-3">
+                        {user?.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user?.username ?? 'user'}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-gray-200" />
+                        )}
+                        <div className="flex flex-col">
+                          <span>{user?.username || '-'}</span>
+                          <span className="text-xs text-gray-500">ID: {user?.id?.slice(-6) || '-'}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* อีเมล */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user?.email || '—'}
+                    </td>
+
+                    {/* ประเภท */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${typeBadge(tx?.type)}`}>
+                        {tx?.type || '-'}
+                      </span>
+                      {subStatus && (
+                        <div className={`mt-1 inline-block px-2 text-xs font-semibold rounded-full ${subStatusBadge(subStatus)}`}>
+                          {subStatus}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* สถานะธุรกรรมหลัก */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${txStatusBadge(tx?.status)}`}>
+                        {tx?.status || '-'}
+                      </span>
+                    </td>
+
+                    {/* จำนวน */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                      {formatAmount(tx?.amount)} บาท
+                    </td>
+
+                    {/* สลิป */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {slip ? (
+                        <a
+                          href={slip}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 hover:underline"
+                        >
+                          <img src={slip} alt="slip" className="h-10 w-10 rounded object-cover border" />
+                          <span className="text-xs text-gray-600">เปิดดู</span>
+                        </a>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+
+                    {/* แอดมินผู้ตรวจ */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {admin ? (
+                        <div className="flex flex-col">
+                          <span className="font-medium">{admin.username}</span>
+                          <span className="text-xs text-gray-500">{admin.email}</span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
+
+                    {/* ยอดคงเหลือ */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                      {wallet?.balance != null ? `${formatAmount(wallet.balance)} บาท` : '—'}
+                    </td>
+
+                    {/* วันที่ทำรายการ */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {tx?.createdAt
+                        ? new Date(tx.createdAt).toLocaleDateString('th-TH', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        : '-'}
+                    </td>
+
+                    {/* จัดการ */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                      <button
+                        onClick={() => setExpandedId((prev) => (prev === tx?.id ? null : (tx?.id as string)))}
+                        className="px-3 py-1.5 rounded-lg border text-gray-700 hover:bg-gray-50"
+                      >
+                        {expandedId === tx?.id ? 'ซ่อน' : 'รายละเอียด'}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+
+              {/* แถวรายละเอียดเพิ่มเติม */}
+              {dataList?.map((tx) =>
+                expandedId === tx?.id ? (
+                  <tr key={`${tx?.id}-details`} className="bg-gray-50">
+                    <td colSpan={10} className="px-6 py-5">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="p-3 bg-white rounded border">
+                          <div className="text-gray-500 mb-1">รหัสธุรกรรม</div>
+                          <div className="font-mono break-all">{tx?.id}</div>
+                        </div>
+                        <div className="p-3 bg-white rounded border">
+                          <div className="text-gray-500 mb-1">กระเป๋าเงิน</div>
+                          <div>ID: {tx?.wallet?.id || '—'}</div>
+                          <div>ยอดคงเหลือ: {tx?.wallet?.balance != null ? `${formatAmount(tx.wallet.balance)} บาท` : '—'}</div>
+                        </div>
+                        <div className="p-3 bg-white rounded border">
+                          <div className="text-gray-500 mb-1">อ้างอิงย่อย</div>
+                          <div className="space-y-1">
+                            <div>Deposit ID: {tx?.deposit?.id || '—'}</div>
+                            <div>Withdrawal ID: {tx?.withdrawal?.id || '—'}</div>
+                            <div>Purchase ID: {tx?.purchase?.id || '—'}</div>
+                            <div>Gift ID: {tx?.gift?.id || '—'}</div>
+                            <div>Transfer ID: {tx?.transfer?.id || '—'}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null
+              )}
+            </tbody>
