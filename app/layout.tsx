@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: "MeCoins - MeGuild Financial System",
   description: "ระบบการเงินของ MeGuild สำหรับจัดการ MeCoins",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 export default function RootLayout({
   children,
