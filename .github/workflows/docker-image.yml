@@ -1,0 +1,112 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: string
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ github.event.repository.name }}
+
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: chunwarayut/${{ steps.string.outputs.lowercase }}:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: string
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ github.event.repository.name }}
+
+      - name: SSH Command docker pull
+        uses: D3rHase/ssh-command-action@v0.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          private_key: ${{ secrets.SSH_KEY }}
+          command: docker pull chunwarayut/${{ steps.string.outputs.lowercase }}:latest
+
+      - name: SSH Command docker stop
+        uses: D3rHase/ssh-command-action@v0.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          private_key: ${{ secrets.SSH_KEY }}
+          command: docker stop ${{ steps.string.outputs.lowercase }} || true
+
+      - name: SSH Command docker rm
+        uses: D3rHase/ssh-command-action@v0.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          private_key: ${{ secrets.SSH_KEY }}
+          command: docker rm ${{ steps.string.outputs.lowercase }} || true
+
+      - name: SSH Command docker run
+        uses: D3rHase/ssh-command-action@v0.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          private_key: ${{ secrets.SSH_KEY }}
+          command: |
+            docker run --name ${{ steps.string.outputs.lowercase }} \
+              --label io.portainer.accesscontrol.teams=discord \
+              --restart=always \
+              -d \
+              -p 	7071:3000 \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+              -e SMTP_HOST="${{ secrets.SMTP_HOST }}" \
+              -e SMTP_PORT="${{ secrets.SMTP_PORT }}" \
+              -e SMTP_USER="${{ secrets.SMTP_USER }}" \
+              -e SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}" \
+              -e SMTP_FROM="${{ secrets.SMTP_FROM }}" \
+              -e CLOUDFLARE_ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" \
+              -e CLOUDFLARE_API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              -e CLOUDFLARE_HASH="${{ secrets.CLOUDFLARE_HASH }}" \
+              -e NEXT_PUBLIC_CLOUDFLARE_HASH="${{ secrets.NEXT_PUBLIC_CLOUDFLARE_HASH }}" \
+              --memory=512m \
+              --memory-swap=512m \
+              --cpus=1.5 \
+              --log-opt max-size=10m \
+              --log-opt max-file=3 \
+              chunwarayut/${{ steps.string.outputs.lowercase }}:latest
+
+      - name: SSH Command docker image prune
+        uses: D3rHase/ssh-command-action@v0.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          private_key: ${{ secrets.SSH_KEY }}
+          command: docker image prune -a -f
+
+      - name: SSH Command docker logs
+        uses: D3rHase/ssh-command-action@v0.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          private_key: ${{ secrets.SSH_KEY }}
+          command: docker logs --timestamps --since=1h ${{ steps.string.outputs.lowercase }}
