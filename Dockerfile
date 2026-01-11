@@ -13,8 +13,8 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-# Use npm install to handle potential lockfile sync issues
-RUN npm install
+# Use --ignore-scripts to skip postinstall (prisma generate) since schema isn't copied yet
+RUN npm install --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
